@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Wallet,
   MapPin,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
@@ -35,6 +36,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", icon: ClipboardList, exact: false },
   { to: "/admin/payments", label: "Payments", icon: Wallet, exact: false },
+  { to: "/admin/payment-settings", label: "Payment Settings", icon: Settings, exact: false },
   { to: "/admin/zones", label: "Delivery Zones", icon: MapPin, exact: false },
   { to: "/admin/menu", label: "Menu", icon: UtensilsCrossed, exact: false },
 ] as const;

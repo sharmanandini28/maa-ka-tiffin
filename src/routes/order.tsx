@@ -42,16 +42,15 @@ import {
 } from "@/components/ui/select";
 import { createOrder, type OrderResultDTO } from "@/lib/orders.functions";
 import { checkCutoff, toDateKey, getCutoffMoment, formatCountdown } from "@/lib/cutoff";
-import { zonesQueryOptions } from "@/lib/queries";
+import { paymentSettingsQueryOptions, zonesQueryOptions } from "@/lib/queries";
 import type { ZoneDTO } from "@/lib/public.functions";
 import {
   ADD_ONS,
   DAILY_PRICES,
   EXTRA_ROTI_PRICE,
+  DEFAULT_PAYMENT_UPI_ID,
   PAYMENT_INSTRUCTION_TEXT,
-  PAYMENT_PAYEE_NAME,
   PAYMENT_SCREENSHOT_INSTRUCTION,
-  PAYMENT_TRANSACTION_ID_REQUIRED,
   PAYMENT_UPI_ID,
   PLAN_CATALOG,
   SUBSCRIPTION_PLANS,
@@ -128,6 +127,19 @@ function OrderWizard({
   const today = toDateKey(new Date());
   const maxDate = toDateKey(new Date(Date.now() + 7 * 86400000));
   const { data: zones = [] } = useQuery(zonesQueryOptions);
+  const { data: paymentSettings } = useQuery(paymentSettingsQueryOptions);
+  const activePaymentSettings = paymentSettings ?? {
+    id: null,
+    upi_id: PAYMENT_UPI_ID,
+    payee_name: "Maa Jaisa Tiffin",
+    payment_instructions: PAYMENT_INSTRUCTION_TEXT,
+    screenshot_instructions: PAYMENT_SCREENSHOT_INSTRUCTION,
+    transaction_id_required: false,
+    upi_enabled: true,
+    is_active: true,
+    unavailable: false,
+    using_placeholder: PAYMENT_UPI_ID === DEFAULT_PAYMENT_UPI_ID,
+  };
 
   const [step, setStep] = useState(0);
   const [mealChoice, setMealChoice] = useState<MealChoice>("lunch");
@@ -180,7 +192,12 @@ function OrderWizard({
   const perMeal = DAILY_PRICES[plan] * quantity + addOnTotal + extraRoti * EXTRA_ROTI_PRICE;
   const grandTotal = (perMeal + deliveryFee) * meals.length;
   const paymentNote = "Maa Jaisa Tiffin Order";
-  const upiPaymentUri = buildUpiPaymentUri({ amount: grandTotal, note: paymentNote });
+  const upiPaymentUri = buildUpiPaymentUri({
+    amount: grandTotal,
+    note: paymentNote,
+    upiId: activePaymentSettings.upi_id,
+    payeeName: activePaymentSettings.payee_name,
+  });
   const paymentWhatsAppMessage = buildPaymentWhatsAppMessage({
     customerName: name.trim() || "Customer",
     mobile: mobile.trim() || "Not provided",
@@ -195,7 +212,10 @@ function OrderWizard({
     if (paymentMode === "cod" && !codAllowed) {
       setPaymentMode("upi");
     }
-  }, [paymentMode, codAllowed]);
+    if (paymentMode === "upi" && !activePaymentSettings.upi_enabled && codAllowed) {
+      setPaymentMode("cod");
+    }
+  }, [paymentMode, codAllowed, activePaymentSettings.upi_enabled]);
 
   function toggleAddOn(id: string) {
     setAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -217,9 +237,12 @@ function OrderWizard({
         if (address.trim().length < 8) return "Please enter your full delivery address.";
         return null;
       case 6:
+        if (paymentMode === "upi" && !activePaymentSettings.upi_enabled) {
+          return "UPI payment is currently unavailable. Please choose COD or contact us on WhatsApp.";
+        }
         if (
           paymentMode === "upi" &&
-          PAYMENT_TRANSACTION_ID_REQUIRED &&
+          activePaymentSettings.transaction_id_required &&
           upiTxn.trim().length === 0
         ) {
           return "Please enter the UPI transaction ID.";
@@ -650,12 +673,13 @@ function OrderWizard({
             )}
 
             {step === 5 && (
-              <StepCard title="Payment" subtitle="Pay securely via UPI or choose COD.">
+              <StepCard title="Payment" subtitle="Direct UPI QR payment or sector-based COD.">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
-                    onClick={() => setPaymentMode("upi")}
-                    className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                    onClick={() => activePaymentSettings.upi_enabled && setPaymentMode("upi")}
+                    disabled={!activePaymentSettings.upi_enabled}
+                    className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                       paymentMode === "upi"
                         ? "border-primary bg-primary/5 ring-1 ring-primary"
                         : "border-border"
@@ -665,7 +689,16 @@ function OrderWizard({
                     <span>
                       <span className="block font-semibold text-foreground">UPI / QR</span>
                       <span className="text-xs text-muted-foreground">
-                        Pay to <span className="font-medium text-foreground">{PAYMENT_UPI_ID}</span>
+                        {activePaymentSettings.upi_enabled ? (
+                          <>
+                            Pay to{" "}
+                            <span className="font-medium text-foreground">
+                              {activePaymentSettings.upi_id}
+                            </span>
+                          </>
+                        ) : (
+                          "Currently disabled by admin"
+                        )}
                       </span>
                     </span>
                   </button>
@@ -689,11 +722,25 @@ function OrderWizard({
                   </button>
                 </div>
 
-                {paymentMode === "upi" && (
+                {!activePaymentSettings.upi_enabled && (
+                  <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                    UPI payment is currently disabled. Please choose COD if available or contact us
+                    on WhatsApp for manual approval.
+                  </div>
+                )}
+
+                {paymentMode === "upi" && activePaymentSettings.upi_enabled && (
                   <UpiPaymentBox
                     amount={grandTotal}
                     paymentUri={upiPaymentUri}
                     paymentNote={paymentNote}
+                    upiId={activePaymentSettings.upi_id}
+                    payeeName={activePaymentSettings.payee_name}
+                    paymentInstructions={activePaymentSettings.payment_instructions}
+                    screenshotInstructions={activePaymentSettings.screenshot_instructions}
+                    transactionIdRequired={activePaymentSettings.transaction_id_required}
+                    unavailable={activePaymentSettings.unavailable}
+                    usingPlaceholder={activePaymentSettings.using_placeholder}
                     transactionId={upiTxn}
                     onTransactionIdChange={setUpiTxn}
                     whatsappLink={buildWhatsAppLink(paymentWhatsAppMessage)}
@@ -704,10 +751,12 @@ function OrderWizard({
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span>
                     <span className="font-semibold">
-                      UPI payment ke baad order automatic confirm nahi hota.
+                      Razorpay/payment gateway use nahi ho raha hai.
                     </span>{" "}
-                    Screenshot/transaction ID verify hone ke baad admin order confirm karega. COD
-                    availability sector rules ke hisaab se rahegi.
+                    Aap direct UPI QR se payment karenge. QR amount order total se match hona
+                    chahiye. Payment ke baad screenshot WhatsApp par bhejna zaroori hai. Admin
+                    payment verify karne ke baad order confirm karega. COD availability sector rules
+                    ke hisaab se rahegi.
                   </span>
                 </div>
               </StepCard>
@@ -895,6 +944,13 @@ function UpiPaymentBox({
   amount,
   paymentUri,
   paymentNote,
+  upiId,
+  payeeName,
+  paymentInstructions,
+  screenshotInstructions,
+  transactionIdRequired,
+  unavailable,
+  usingPlaceholder,
   transactionId,
   onTransactionIdChange,
   whatsappLink,
@@ -902,6 +958,13 @@ function UpiPaymentBox({
   amount: number;
   paymentUri: string;
   paymentNote: string;
+  upiId: string;
+  payeeName: string;
+  paymentInstructions: string;
+  screenshotInstructions: string;
+  transactionIdRequired: boolean;
+  unavailable: boolean;
+  usingPlaceholder: boolean;
   transactionId: string;
   onTransactionIdChange: (value: string) => void;
   whatsappLink: string;
@@ -956,21 +1019,32 @@ function UpiPaymentBox({
         </div>
 
         <div className="space-y-3">
+          {(unavailable || usingPlaceholder) && (
+            <div className="rounded-lg border border-terracotta/30 bg-terracotta/10 p-3 text-xs text-foreground">
+              {unavailable
+                ? "Admin payment settings migration abhi apply nahi hui hai, isliye fallback UPI config use ho raha hai."
+                : "Developer warning: placeholder UPI ID use ho raha hai. Admin panel se real UPI settings update karein."}
+            </div>
+          )}
+
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Payable amount</p>
             <p className="font-serif text-3xl font-bold text-primary">{formatINR(amount)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              QR amount final order total se match hona chahiye.
+            </p>
           </div>
 
           <dl className="grid gap-2 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
               <dt className="text-muted-foreground">UPI ID</dt>
               <dd className="flex items-center gap-2 font-semibold text-foreground">
-                {PAYMENT_UPI_ID}
+                {upiId}
                 <Button
                   type="button"
                   size="sm"
                   variant="ghost"
-                  onClick={() => copy(PAYMENT_UPI_ID, "UPI ID")}
+                  onClick={() => copy(upiId, "UPI ID")}
                 >
                   <Copy className="h-4 w-4" /> Copy
                 </Button>
@@ -978,7 +1052,7 @@ function UpiPaymentBox({
             </div>
             <div className="flex justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
               <dt className="text-muted-foreground">Payee</dt>
-              <dd className="font-semibold text-foreground">{PAYMENT_PAYEE_NAME}</dd>
+              <dd className="font-semibold text-foreground">{payeeName}</dd>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
               <dt className="text-muted-foreground">Payment note</dt>
@@ -997,13 +1071,18 @@ function UpiPaymentBox({
           </dl>
 
           <p className="rounded-lg bg-mustard/15 p-3 text-xs text-foreground">
-            {PAYMENT_SCREENSHOT_INSTRUCTION}
+            {screenshotInstructions}
           </p>
-          <p className="text-xs text-muted-foreground">{PAYMENT_INSTRUCTION_TEXT}</p>
+          <p className="text-xs text-muted-foreground">{paymentInstructions}</p>
+          <p className="text-xs font-medium text-foreground">
+            {transactionIdRequired
+              ? "Transaction ID required hai, aur payment screenshot WhatsApp par bhejna zaroori hai."
+              : "Transaction ID optional hai, lekin payment screenshot WhatsApp par bhejna zaroori hai."}
+          </p>
 
           <div className="grid max-w-sm gap-1.5">
             <Label htmlFor="txn">
-              UPI transaction ID {PAYMENT_TRANSACTION_ID_REQUIRED ? "(required)" : "(optional)"}
+              UPI transaction ID {transactionIdRequired ? "(required)" : "(optional)"}
             </Label>
             <Input
               id="txn"
@@ -1334,6 +1413,12 @@ function buildPaymentWhatsAppMessage({
 }
 
 function Confirmation({ results, onReset }: { results: OrderResultDTO[]; onReset: () => void }) {
+  const { data: paymentSettings } = useQuery(paymentSettingsQueryOptions);
+  const successPaymentSettings = paymentSettings ?? {
+    upi_id: PAYMENT_UPI_ID,
+    payment_instructions: PAYMENT_INSTRUCTION_TEXT,
+    using_placeholder: PAYMENT_UPI_ID === DEFAULT_PAYMENT_UPI_ID,
+  };
   const primary = results[0];
   const total = results.reduce((s, r) => s + r.total, 0);
   const isLate = results.some((r) => r.is_late_request);
@@ -1403,10 +1488,15 @@ ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Pl
             <div className="mt-3 space-y-2 rounded-md bg-mustard/15 p-2.5 text-xs text-foreground">
               <p>
                 Pay {formatINR(total)} to UPI ID{" "}
-                <span className="font-semibold">{PAYMENT_UPI_ID}</span> and share the screenshot on
-                WhatsApp.
+                <span className="font-semibold">{successPaymentSettings.upi_id}</span> and share the
+                screenshot on WhatsApp.
               </p>
-              <p className="font-medium">{PAYMENT_INSTRUCTION_TEXT}</p>
+              <p className="font-medium">{successPaymentSettings.payment_instructions}</p>
+              {successPaymentSettings.using_placeholder && (
+                <p className="text-muted-foreground">
+                  Developer warning: placeholder UPI ID is still configured.
+                </p>
+              )}
             </div>
           )}
         </div>

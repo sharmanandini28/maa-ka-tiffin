@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Wallet, Clock, Check, X, MessageCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  adminPaymentSettingsQueryOptions,
   adminOrdersQueryOptions,
   updateOrderWithAudit,
   type AdminOrder,
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin/payments")({
 function PaymentsPage() {
   const qc = useQueryClient();
   const { data: orders = [], isLoading } = useQuery(adminOrdersQueryOptions);
+  const { data: paymentSettings } = useQuery(adminPaymentSettingsQueryOptions);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const upiPending = useMemo(
@@ -69,6 +71,13 @@ function PaymentsPage() {
         <p className="text-sm text-muted-foreground">
           Manually verify UPI screenshots/transaction IDs and approve late orders.
         </p>
+        {paymentSettings && !paymentSettings.unavailable && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Active UPI:{" "}
+            <span className="font-semibold text-foreground">{paymentSettings.upi_id}</span> · Payee:{" "}
+            <span className="font-semibold text-foreground">{paymentSettings.payee_name}</span>
+          </p>
+        )}
       </div>
 
       {isLoading ? (

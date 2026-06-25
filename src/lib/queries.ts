@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getPlans, getWeekMenu, getZones } from "./public.functions";
+import { getActivePaymentSettings, getPlans, getWeekMenu, getZones } from "./public.functions";
 
 export const plansQueryOptions = queryOptions({
   queryKey: ["plans"],
@@ -17,4 +17,10 @@ export const zonesQueryOptions = queryOptions({
   queryKey: ["zones"],
   queryFn: () => getZones(),
   staleTime: 5 * 60_000,
+});
+
+export const paymentSettingsQueryOptions = queryOptions({
+  queryKey: ["payment-settings", "active"],
+  queryFn: () => getActivePaymentSettings(),
+  staleTime: 60_000,
 });
