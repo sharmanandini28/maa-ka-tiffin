@@ -92,7 +92,7 @@ function generateOrderCode(now = new Date()): string {
 }
 
 export const createOrder = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => orderSchema.parse(data))
+  .validator((data: unknown) => orderSchema.parse(data))
   .handler(async ({ data }): Promise<OrderResultDTO> => {
     const isLate = Boolean(data.late_request);
 
