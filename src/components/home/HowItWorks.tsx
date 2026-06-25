@@ -28,7 +28,9 @@ export function HowItWorks() {
                   </span>
                 </div>
                 <h3 className="mt-4 font-serif text-lg font-bold text-foreground">{s.title}</h3>
-                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">{s.body}</p>
+                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">
+                  {s.body}
+                </p>
               </Reveal>
             );
           })}

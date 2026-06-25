@@ -97,12 +97,16 @@ export function OrderDrawer({
                   <li key={s} className="flex items-center gap-2">
                     <span
                       className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
-                        reached ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                        reached
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-muted-foreground"
                       }`}
                     >
                       {reached ? <CheckCircle2 className="h-3 w-3" /> : i + 1}
                     </span>
-                    <span className={`capitalize ${reached ? "text-foreground" : "text-muted-foreground"}`}>
+                    <span
+                      className={`capitalize ${reached ? "text-foreground" : "text-muted-foreground"}`}
+                    >
                       {s.replace(/_/g, " ")}
                     </span>
                   </li>
@@ -119,22 +123,45 @@ export function OrderDrawer({
           {/* Action buttons */}
           <div className="grid grid-cols-2 gap-2">
             {nextStep && (
-              <Button size="sm" variant="default" disabled={busy} onClick={() => patch({ delivery_state: nextStep.next })}>
+              <Button
+                size="sm"
+                variant="default"
+                disabled={busy}
+                onClick={() => patch({ delivery_state: nextStep.next })}
+              >
                 <ChevronRight className="h-4 w-4" /> {nextStep.label}
               </Button>
             )}
             {order.payment_status !== "paid" && (
-              <Button size="sm" variant="secondary" disabled={busy} onClick={() => patch({ payment_status: "paid" })}>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={busy}
+                onClick={() => patch({ payment_status: "paid" })}
+              >
                 <Wallet className="h-4 w-4" /> Mark paid
               </Button>
             )}
             <Button asChild size="sm" variant="outline">
-              <a href={buildWhatsAppTo(wa, `Hi ${order.customer_name}, regarding your order ${order.order_code}...`)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={buildWhatsAppTo(
+                  wa,
+                  `Hi ${order.customer_name}, regarding your order ${order.order_code}...`,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
             </Button>
             {order.delivery_state !== "cancelled" && order.delivery_state !== "delivered" && (
-              <Button size="sm" variant="outline" className="text-destructive" disabled={busy} onClick={() => patch({ delivery_state: "cancelled" })}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-destructive"
+                disabled={busy}
+                onClick={() => patch({ delivery_state: "cancelled" })}
+              >
                 <XCircle className="h-4 w-4" /> Cancel
               </Button>
             )}
@@ -161,7 +188,11 @@ export function OrderDrawer({
             {order.landmark && <p className="text-muted-foreground">Landmark: {order.landmark}</p>}
             <Row label="Sector" value={order.sector} />
             <Button asChild size="sm" variant="ghost" className="mt-2 px-2">
-              <a href={order.maps_link || mapsSearchLink(`${order.address} ${order.sector} Noida`)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={order.maps_link || mapsSearchLink(`${order.address} ${order.sector} Noida`)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MapPin className="h-4 w-4" /> Open in Maps
               </a>
             </Button>
@@ -205,7 +236,11 @@ export function OrderDrawer({
                 setSavingNotes(false);
               }}
             >
-              {savingNotes ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {savingNotes ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               Save notes
             </Button>
           </Section>
@@ -218,7 +253,9 @@ export function OrderDrawer({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
       <div className="space-y-1">{children}</div>
     </div>
   );
@@ -228,7 +265,9 @@ function Row({ label, value, capitalize }: { label: string; value: string; capit
   return (
     <div className="flex justify-between gap-3">
       <span className="text-muted-foreground">{label}</span>
-      <span className={`text-right font-medium text-foreground ${capitalize ? "capitalize" : ""}`}>{value}</span>
+      <span className={`text-right font-medium text-foreground ${capitalize ? "capitalize" : ""}`}>
+        {value}
+      </span>
     </div>
   );
 }

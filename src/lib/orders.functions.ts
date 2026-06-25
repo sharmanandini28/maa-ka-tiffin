@@ -1,11 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { checkCutoff } from "./cutoff";
+import { checkCutoff, INDIA_TIME_ZONE } from "./cutoff";
 import { ADD_ONS, DAILY_PRICES, EXTRA_ROTI_PRICE } from "./brand";
 
 const orderSchema = z.object({
   customer_name: z.string().trim().min(2).max(80),
-  mobile: z.string().trim().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+  mobile: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
   whatsapp_number: z
     .string()
     .trim()
@@ -53,6 +56,41 @@ const PLAN_NAMES: Record<string, string> = {
   premium: "Premium",
 };
 
+function orderTimestampParts(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: INDIA_TIME_ZONE,
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  return {
+    yymmdd: `${get("year")}${get("month")}${get("day")}`,
+    hhmmss: `${get("hour")}${get("minute")}${get("second")}`,
+  };
+}
+
+function randomOrderSuffix(length = 4): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(length);
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.getRandomValues) {
+    cryptoApi.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+}
+
+function generateOrderCode(now = new Date()): string {
+  const { yymmdd, hhmmss } = orderTimestampParts(now);
+  return `MJT-${yymmdd}-${hhmmss}-${randomOrderSuffix()}`;
+}
+
 export const createOrder = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => orderSchema.parse(data))
   .handler(async ({ data }): Promise<OrderResultDTO> => {
@@ -77,19 +115,21 @@ export const createOrder = createServerFn({ method: "POST" })
       .eq("sector", data.sector)
       .maybeSingle();
 
-    if (zone) {
-      if (!zone.active) throw new Error("Sorry, we are not delivering to this sector right now.");
-      if (zone.meals !== "both" && zone.meals !== data.meal) {
-        throw new Error(`This sector currently has ${zone.meals} delivery only.`);
-      }
-      if (data.payment_mode === "cod" && !zone.cod_allowed) {
-        throw new Error("Cash on Delivery is not available for this sector. Please use UPI.");
-      }
-      if (data.quantity < zone.min_qty) {
-        throw new Error(`Minimum ${zone.min_qty} tiffin(s) required for this sector.`);
-      }
-      deliveryFee = zone.delivery_fee ?? 0;
+    if (!zone?.active) {
+      throw new Error(
+        "Delivery is not available in this sector yet. Please contact us on WhatsApp.",
+      );
     }
+    if (zone.meals !== "both" && zone.meals !== data.meal) {
+      throw new Error(`This sector currently has ${zone.meals} delivery only.`);
+    }
+    if (data.payment_mode === "cod" && !zone.cod_allowed) {
+      throw new Error("Cash on Delivery is not available for this sector. Please use UPI.");
+    }
+    if (data.quantity < zone.min_qty) {
+      throw new Error(`Minimum ${zone.min_qty} tiffin(s) required for this sector.`);
+    }
+    deliveryFee = zone.delivery_fee ?? 0;
 
     // Recompute total server-side.
     const base = DAILY_PRICES[data.plan_slug] ?? 0;
@@ -100,19 +140,7 @@ export const createOrder = createServerFn({ method: "POST" })
     const total =
       base * data.quantity + addOnTotal + data.extra_roti * EXTRA_ROTI_PRICE + deliveryFee;
 
-    // Generate order code MJT<YYMMDD><seq>
-    const now = new Date();
-    const ymd =
-      String(now.getFullYear()).slice(2) +
-      String(now.getMonth() + 1).padStart(2, "0") +
-      String(now.getDate()).padStart(2, "0");
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const { count } = await supabaseAdmin
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", startOfDay);
-    const seq = String((count ?? 0) + 1).padStart(3, "0");
-    const order_code = `MJT${ymd}${seq}`;
+    const order_code = generateOrderCode();
 
     const payment_status = data.payment_mode === "cod" ? "cod" : "pending";
 

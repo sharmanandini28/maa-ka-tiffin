@@ -1,4 +1,6 @@
 export const WHATSAPP_NUMBER = "919311234567"; // Maa Jaisa Tiffin support line
+export const SUPPORT_PHONE_DISPLAY = "+91 93112 34567";
+export const SUPPORT_EMAIL = "hello@maajaisatiffin.in";
 export const UPI_ID = "maajaisatiffin@upi";
 export const BRAND_NAME = "Maa Jaisa Tiffin";
 
@@ -86,12 +88,24 @@ export const PURITY_PROMISES = [
 
 // ---- Why choose us ----
 export const WHY_CHOOSE = [
-  { title: "Real Ghar Ka Taste", body: "Simple, balanced meals that taste like home — not a restaurant." },
+  {
+    title: "Real Ghar Ka Taste",
+    body: "Simple, balanced meals that taste like home — not a restaurant.",
+  },
   { title: "Trust & Purity", body: "Farm-fresh sourcing, no palm oil, no milawat, no shortcuts." },
-  { title: "Spotless Hygiene", body: "Clean kitchen, food-grade packaging and a daily hygiene checklist." },
+  {
+    title: "Spotless Hygiene",
+    body: "Clean kitchen, food-grade packaging and a daily hygiene checklist.",
+  },
   { title: "Daily Convenience", body: "Pre-order lunch & dinner — delivered hot, right on time." },
-  { title: "Flexible Subscriptions", body: "Trial, weekly and monthly plans with easy pause options." },
-  { title: "Less Wastage", body: "Cutoff-based cooking means fresher food and a smaller footprint." },
+  {
+    title: "Flexible Subscriptions",
+    body: "Trial, weekly and monthly plans with easy pause options.",
+  },
+  {
+    title: "Less Wastage",
+    body: "Cutoff-based cooking means fresher food and a smaller footprint.",
+  },
 ];
 
 // ---- How it works ----
@@ -99,7 +113,11 @@ export const HOW_IT_WORKS = [
   { step: "01", title: "Choose Your Meal", body: "Pick your plan and lunch, dinner, or both." },
   { step: "02", title: "Pick Your Date", body: "Select a date — we validate the cut-off live." },
   { step: "03", title: "Confirm & Pay", body: "Pay via UPI/QR or COD, then confirm on WhatsApp." },
-  { step: "04", title: "Receive Fresh Food", body: "Hot, home-style tiffin delivered to your door." },
+  {
+    step: "04",
+    title: "Receive Fresh Food",
+    body: "Hot, home-style tiffin delivered to your door.",
+  },
 ];
 
 // ---- Stats ----
@@ -159,7 +177,12 @@ export const TESTIMONIALS = [
 ];
 
 // ---- Plan feature comparison ----
-export const PLAN_FEATURES: { feature: string; basic: boolean | string; standard: boolean | string; premium: boolean | string }[] = [
+export const PLAN_FEATURES: {
+  feature: string;
+  basic: boolean | string;
+  standard: boolean | string;
+  premium: boolean | string;
+}[] = [
   { feature: "Roti (fresh phulka)", basic: "4", standard: "5", premium: "6" },
   { feature: "Sabzi", basic: "1", standard: "2", premium: "2" },
   { feature: "Dal", basic: true, standard: true, premium: true },
@@ -202,7 +225,16 @@ export const PLAN_CATALOG: {
     name: "Premium",
     price: DAILY_PRICES.premium,
     tagline: "Fullest spread with a sweet treat",
-    items: ["6 Roti (phulka)", "2 Sabzi", "Dal", "Rice", "Salad", "Curd / Raita", "Sweet (2x/week)", "Premium packaging"],
+    items: [
+      "6 Roti (phulka)",
+      "2 Sabzi",
+      "Dal",
+      "Rice",
+      "Salad",
+      "Curd / Raita",
+      "Sweet (2x/week)",
+      "Premium packaging",
+    ],
   },
 ];
 
@@ -215,4 +247,3 @@ export const SUBSCRIPTION_PLANS = [
 
 // ---- Kitchen buffer presets ----
 export const BUFFER_OPTIONS = [0, 5, 10] as const;
-

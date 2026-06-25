@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { buildWhatsAppLink, NOIDA_SECTORS } from "@/lib/brand";
+import {
+  buildWhatsAppLink,
+  NOIDA_SECTORS,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_DISPLAY,
+} from "@/lib/brand";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -19,7 +24,10 @@ export const Route = createFileRoute("/contact")({
           "Contact Maa Jaisa Tiffin in Noida. WhatsApp us for orders, late orders, corporate plans and delivery in Sector 62, 63, 76, 137 and nearby sectors.",
       },
       { property: "og:title", content: "Contact — Maa Jaisa Tiffin Noida" },
-      { property: "og:description", content: "Reach us on WhatsApp for orders and delivery in Noida." },
+      {
+        property: "og:description",
+        content: "Reach us on WhatsApp for orders and delivery in Noida.",
+      },
       { property: "og:url", content: "/contact" },
     ],
     links: [{ rel: "canonical", href: "/contact" }],
@@ -27,18 +35,28 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
-const INQUIRY = ["General question", "New order", "Late order", "Subscription", "Corporate / bulk", "Feedback"];
+const INQUIRY = [
+  "General question",
+  "New order",
+  "Late order",
+  "Subscription",
+  "Corporate / bulk",
+  "Feedback",
+];
 
 function ContactPage() {
   const [form, setForm] = useState({ name: "", phone: "", type: "General question", message: "" });
-  const msg =
-    `Contact enquiry (${form.type})\nName: ${form.name}\nPhone: ${form.phone}\nMessage: ${form.message}`;
+  const msg = `Contact enquiry (${form.type})\nName: ${form.name}\nPhone: ${form.phone}\nMessage: ${form.message}`;
 
   return (
     <SiteLayout>
       <PageHero
         eyebrow="Get in Touch"
-        title={<>We're a <span className="text-primary">message</span> away</>}
+        title={
+          <>
+            We're a <span className="text-primary">message</span> away
+          </>
+        }
         subtitle="Have a question, want to place a late order, or set up a corporate plan? Reach out — we usually reply within minutes."
       />
 
@@ -47,19 +65,21 @@ function ContactPage() {
           {/* Info column */}
           <Reveal variant="left" className="space-y-5">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <h2 className="font-serif text-2xl font-bold text-foreground">Reach Maa Jaisa Tiffin</h2>
+              <h2 className="font-serif text-2xl font-bold text-foreground">
+                Reach Maa Jaisa Tiffin
+              </h2>
               <ul className="mt-5 space-y-4 text-sm">
                 <li className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Phone className="h-5 w-5" />
                   </span>
-                  +91 93112 34567
+                  {SUPPORT_PHONE_DISPLAY}
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Mail className="h-5 w-5" />
                   </span>
-                  hello@maajaisatiffin.in
+                  {SUPPORT_EMAIL}
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -77,11 +97,18 @@ function ContactPage() {
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Truck className="h-5 w-5" />
                   </span>
-                  <span>Serving: {NOIDA_SECTORS.filter((s) => s.startsWith("Sector")).join(", ")} & nearby PG/office areas.</span>
+                  <span>
+                    Serving: {NOIDA_SECTORS.filter((s) => s.startsWith("Sector")).join(", ")} &
+                    nearby PG/office areas.
+                  </span>
                 </li>
               </ul>
               <Button asChild variant="mustard" size="lg" className="mt-6 w-full">
-                <a href={buildWhatsAppLink("Hi! I'd like to know more about Maa Jaisa Tiffin.")} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={buildWhatsAppLink("Hi! I'd like to know more about Maa Jaisa Tiffin.")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <MessageCircle className="h-5 w-5" /> Chat on WhatsApp
                 </a>
               </Button>
@@ -91,13 +118,16 @@ function ContactPage() {
               <h3 className="font-serif text-lg font-bold text-foreground">Booking cut-off</h3>
               <div className="mt-4 space-y-3 text-sm">
                 <p className="rounded-xl border border-border bg-card p-3">
-                  <span className="font-semibold text-primary">Tomorrow's Lunch</span> — before 12:00 AM (midnight) the night before.
+                  <span className="font-semibold text-primary">Tomorrow's Lunch</span> — before
+                  12:00 AM (midnight) the night before.
                 </p>
                 <p className="rounded-xl border border-border bg-card p-3">
-                  <span className="font-semibold text-terracotta">Today's Dinner</span> — before 12:00 PM (noon) the same day.
+                  <span className="font-semibold text-terracotta">Today's Dinner</span> — before
+                  12:00 PM (noon) the same day.
                 </p>
                 <p className="rounded-xl border border-border bg-card p-3">
-                  <span className="font-semibold text-foreground">Late Orders</span> — via WhatsApp, subject to availability.
+                  <span className="font-semibold text-foreground">Late Orders</span> — via WhatsApp,
+                  subject to availability.
                 </p>
               </div>
             </div>
@@ -114,11 +144,23 @@ function ContactPage() {
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name">Your name</Label>
-                  <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5" placeholder="Full name" />
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="Full name"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1.5" placeholder="WhatsApp number" />
+                  <Input
+                    id="phone"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="WhatsApp number"
+                  />
                 </div>
               </div>
 
@@ -144,7 +186,14 @@ function ContactPage() {
 
               <div className="mt-4">
                 <Label htmlFor="message">Message</Label>
-                <Textarea id="message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="mt-1.5" rows={4} placeholder="How can we help?" />
+                <Textarea
+                  id="message"
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className="mt-1.5"
+                  rows={4}
+                  placeholder="How can we help?"
+                />
               </div>
 
               <Button asChild variant="mustard" size="lg" className="mt-5 w-full">

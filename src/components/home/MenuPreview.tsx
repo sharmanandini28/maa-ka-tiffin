@@ -116,7 +116,8 @@ export function MenuPreview() {
         <Reveal delay={120} className="mt-10 flex justify-center">
           <Button asChild variant="mustard" size="lg">
             <Link to="/menu">
-              <CalendarDays className="h-4 w-4" /> View Full Weekly Menu <ArrowRight className="h-4 w-4" />
+              <CalendarDays className="h-4 w-4" /> View Full Weekly Menu{" "}
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </Reveal>

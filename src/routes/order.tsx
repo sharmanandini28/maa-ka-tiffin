@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -173,10 +173,11 @@ function OrderWizard({
   const perMeal = DAILY_PRICES[plan] * quantity + addOnTotal + extraRoti * EXTRA_ROTI_PRICE;
   const grandTotal = (perMeal + deliveryFee) * meals.length;
 
-  // Force UPI if COD not allowed in this sector
-  if (paymentMode === "cod" && !codAllowed) {
-    setPaymentMode("upi");
-  }
+  useEffect(() => {
+    if (paymentMode === "cod" && !codAllowed) {
+      setPaymentMode("upi");
+    }
+  }, [paymentMode, codAllowed]);
 
   function toggleAddOn(id: string) {
     setAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -276,8 +277,8 @@ function OrderWizard({
             Order Your Tiffin
           </h1>
           <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-            A few guided steps — we'll confirm everything on WhatsApp. Fresh, ghar-jaisa khana on the
-            way.
+            A few guided steps — we'll confirm everything on WhatsApp. Fresh, ghar-jaisa khana on
+            the way.
           </p>
         </div>
 
@@ -353,16 +354,23 @@ function OrderWizard({
                 </div>
                 <div className="mt-4 space-y-3">
                   {cutoffs.map((c) => (
-                    <CutoffBanner key={c.meal} meal={c.meal} allowed={c.allowed} reason={c.reason} date={deliveryDate} />
+                    <CutoffBanner
+                      key={c.meal}
+                      meal={c.meal}
+                      allowed={c.allowed}
+                      reason={c.reason}
+                      date={deliveryDate}
+                    />
                   ))}
                 </div>
                 {isLate && (
                   <div className="mt-4 rounded-xl border border-terracotta/40 bg-terracotta/10 p-4 text-sm text-foreground">
                     <p className="font-semibold">Cutoff has passed for your selection.</p>
                     <p className="mt-1 text-muted-foreground">
-                      You can still submit a <span className="font-medium text-foreground">late
-                      order request</span> — our team will confirm availability on WhatsApp before
-                      cooking. Or pick a later date above.
+                      You can still submit a{" "}
+                      <span className="font-medium text-foreground">late order request</span> — our
+                      team will confirm availability on WhatsApp before cooking. Or pick a later
+                      date above.
                     </p>
                   </div>
                 )}
@@ -370,7 +378,10 @@ function OrderWizard({
             )}
 
             {step === 2 && (
-              <StepCard title="Select your plan" subtitle="Pick the spread that suits your appetite.">
+              <StepCard
+                title="Select your plan"
+                subtitle="Pick the spread that suits your appetite."
+              >
                 <div className="grid gap-3 sm:grid-cols-3">
                   {PLAN_CATALOG.map((p) => (
                     <button
@@ -392,7 +403,8 @@ function OrderWizard({
                         {p.name}
                       </p>
                       <p className="text-sm font-semibold text-primary">
-                        {formatINR(p.price)} <span className="text-xs font-normal text-muted-foreground">/ meal</span>
+                        {formatINR(p.price)}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">/ meal</span>
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">{p.tagline}</p>
                       <ul className="mt-3 space-y-1">
@@ -432,7 +444,9 @@ function OrderWizard({
                     />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label htmlFor="extra-roti">Extra roti ({formatINR(EXTRA_ROTI_PRICE)} each)</Label>
+                    <Label htmlFor="extra-roti">
+                      Extra roti ({formatINR(EXTRA_ROTI_PRICE)} each)
+                    </Label>
                     <Input
                       id="extra-roti"
                       type="number"
@@ -459,7 +473,10 @@ function OrderWizard({
                   </div>
                   <div className="grid gap-1.5">
                     <Label>Rice preference</Label>
-                    <Select value={ricePref ? "yes" : "no"} onValueChange={(v) => setRicePref(v === "yes")}>
+                    <Select
+                      value={ricePref ? "yes" : "no"}
+                      onValueChange={(v) => setRicePref(v === "yes")}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -519,7 +536,10 @@ function OrderWizard({
                   />
                 </div>
                 <label className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox checked={sameWhatsapp} onCheckedChange={(v) => setSameWhatsapp(Boolean(v))} />
+                  <Checkbox
+                    checked={sameWhatsapp}
+                    onCheckedChange={(v) => setSameWhatsapp(Boolean(v))}
+                  />
                   WhatsApp number is the same as mobile
                 </label>
                 {!sameWhatsapp && (
@@ -552,13 +572,21 @@ function OrderWizard({
                       </SelectContent>
                     </Select>
                   </div>
-                  <TextField label="Email (optional)" id="email" type="email" value={email} onChange={setEmail} />
+                  <TextField
+                    label="Email (optional)"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                  />
                 </div>
 
                 {zone && (
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     <Badge>
-                      {zone.delivery_fee > 0 ? `${formatINR(zone.delivery_fee)} delivery` : "Free delivery"}
+                      {zone.delivery_fee > 0
+                        ? `${formatINR(zone.delivery_fee)} delivery`
+                        : "Free delivery"}
                     </Badge>
                     {zone.min_qty > 1 && <Badge>Min {zone.min_qty} tiffins</Badge>}
                     <Badge>{zone.cod_allowed ? "COD available" : "UPI only"}</Badge>
@@ -576,7 +604,12 @@ function OrderWizard({
                   />
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <TextField label="Landmark" id="landmark" value={landmark} onChange={setLandmark} />
+                  <TextField
+                    label="Landmark"
+                    id="landmark"
+                    value={landmark}
+                    onChange={setLandmark}
+                  />
                   <TextField
                     label="Google Maps location link"
                     id="maps"
@@ -598,7 +631,9 @@ function OrderWizard({
                     type="button"
                     onClick={() => setPaymentMode("upi")}
                     className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
-                      paymentMode === "upi" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
+                      paymentMode === "upi"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border"
                     }`}
                   >
                     <Wallet className="mt-0.5 h-5 w-5 text-primary" />
@@ -614,7 +649,9 @@ function OrderWizard({
                     onClick={() => codAllowed && setPaymentMode("cod")}
                     disabled={!codAllowed}
                     className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                      paymentMode === "cod" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
+                      paymentMode === "cod"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border"
                     }`}
                   >
                     <Truck className="mt-0.5 h-5 w-5 text-terracotta" />
@@ -657,16 +694,26 @@ function OrderWizard({
             {step === 6 && (
               <StepCard title="Review & confirm" subtitle="One last look before we start cooking.">
                 <dl className="divide-y divide-border text-sm">
-                  <ReviewRow label="Meal" value={mealChoice === "both" ? "Lunch + Dinner" : mealChoice} capitalize />
+                  <ReviewRow
+                    label="Meal"
+                    value={mealChoice === "both" ? "Lunch + Dinner" : mealChoice}
+                    capitalize
+                  />
                   <ReviewRow label="Date" value={deliveryDate} />
                   <ReviewRow label="Plan" value={`${plan} × ${quantity}`} capitalize />
                   {addOns.length > 0 && (
-                    <ReviewRow label="Add-ons" value={addOns.map((id) => ADD_ONS.find((a) => a.id === id)?.label).join(", ")} />
+                    <ReviewRow
+                      label="Add-ons"
+                      value={addOns.map((id) => ADD_ONS.find((a) => a.id === id)?.label).join(", ")}
+                    />
                   )}
                   <ReviewRow label="Spice" value={spice} capitalize />
                   <ReviewRow label="Delivery to" value={`${sector} — ${name}`} />
                   <ReviewRow label="Mobile" value={mobile} />
-                  <ReviewRow label="Payment" value={paymentMode === "upi" ? "UPI / QR" : "Cash on Delivery"} />
+                  <ReviewRow
+                    label="Payment"
+                    value={paymentMode === "upi" ? "UPI / QR" : "Cash on Delivery"}
+                  />
                   <ReviewRow label="Total" value={formatINR(grandTotal)} bold />
                 </dl>
 
@@ -674,8 +721,14 @@ function OrderWizard({
                   <Checkbox checked={terms} onCheckedChange={(v) => setTerms(Boolean(v))} />
                   <span className="text-muted-foreground">
                     I understand the lunch and dinner booking cutoff policy and accept the{" "}
-                    <Link to="/terms" className="underline">terms</Link> &{" "}
-                    <Link to="/cancellation-policy" className="underline">cancellation policy</Link>.
+                    <Link to="/terms" className="underline">
+                      terms
+                    </Link>{" "}
+                    &{" "}
+                    <Link to="/cancellation-policy" className="underline">
+                      cancellation policy
+                    </Link>
+                    .
                   </span>
                 </label>
 
@@ -779,7 +832,11 @@ function PlaceOrderButton({
     return (
       <div className={compact ? "flex gap-2" : "flex flex-col gap-2 sm:flex-row"}>
         <Button variant="mustard" onClick={onSubmit} disabled={submitting}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clock className="h-4 w-4" />}
+          {submitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Clock className="h-4 w-4" />
+          )}
           {compact ? "Late request" : "Submit late request"}
         </Button>
         {!compact && (
@@ -793,7 +850,12 @@ function PlaceOrderButton({
     );
   }
   return (
-    <Button variant="mustard" size={compact ? "default" : "lg"} onClick={onSubmit} disabled={submitting}>
+    <Button
+      variant="mustard"
+      size={compact ? "default" : "lg"}
+      onClick={onSubmit}
+      disabled={submitting}
+    >
       {submitting ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" /> Placing...
@@ -863,7 +925,11 @@ function CutoffBanner({
         allowed ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
       }`}
     >
-      {allowed ? <Clock className="mt-0.5 h-4 w-4 shrink-0" /> : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />}
+      {allowed ? (
+        <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+      ) : (
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+      )}
       <span className="capitalize">
         <span className="font-semibold">{meal}</span>{" "}
         {allowed ? (
@@ -907,7 +973,12 @@ function SummaryCard({
         <SumRow label="Meals" value={meals.map((m) => m).join(" + ")} capitalize />
         <SumRow label="Plan" value={`${plan} × ${quantity}`} capitalize />
         <SumRow label="Base (per meal)" value={formatINR(DAILY_PRICES[plan] * quantity)} />
-        {extraRoti > 0 && <SumRow label={`Extra roti × ${extraRoti}`} value={formatINR(extraRoti * EXTRA_ROTI_PRICE)} />}
+        {extraRoti > 0 && (
+          <SumRow
+            label={`Extra roti × ${extraRoti}`}
+            value={formatINR(extraRoti * EXTRA_ROTI_PRICE)}
+          />
+        )}
         {addOnTotal > 0 && <SumRow label="Add-ons (per meal)" value={formatINR(addOnTotal)} />}
         {deliveryFee > 0 && <SumRow label="Delivery (per meal)" value={formatINR(deliveryFee)} />}
         {meals.length > 1 && <SumRow label="Meals count" value={`× ${meals.length}`} />}
@@ -916,7 +987,11 @@ function SummaryCard({
         </div>
       </dl>
       <div className="mt-3 rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground">
-        Payment: <span className="font-semibold text-foreground">{paymentMode === "upi" ? "UPI / QR" : "Cash on Delivery"}</span>. We confirm every order on WhatsApp.
+        Payment:{" "}
+        <span className="font-semibold text-foreground">
+          {paymentMode === "upi" ? "UPI / QR" : "Cash on Delivery"}
+        </span>
+        . We confirm every order on WhatsApp.
       </div>
     </div>
   );
@@ -958,7 +1033,9 @@ function MealOption({
       type="button"
       onClick={onClick}
       className={`flex flex-col items-center gap-2 rounded-2xl border p-5 text-center transition-all ${
-        active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/40"
+        active
+          ? "border-primary bg-primary/5 ring-1 ring-primary"
+          : "border-border hover:border-primary/40"
       }`}
     >
       <span
@@ -1014,22 +1091,46 @@ function TextField({
   );
 }
 
-function SumRow({ label, value, bold, capitalize }: { label: string; value: string; bold?: boolean; capitalize?: boolean }) {
+function SumRow({
+  label,
+  value,
+  bold,
+  capitalize,
+}: {
+  label: string;
+  value: string;
+  bold?: boolean;
+  capitalize?: boolean;
+}) {
   return (
     <div className="flex justify-between gap-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={`${bold ? "font-serif text-lg font-bold text-primary" : "font-medium text-foreground"} ${capitalize ? "capitalize" : ""}`}>
+      <dd
+        className={`${bold ? "font-serif text-lg font-bold text-primary" : "font-medium text-foreground"} ${capitalize ? "capitalize" : ""}`}
+      >
         {value}
       </dd>
     </div>
   );
 }
 
-function ReviewRow({ label, value, bold, capitalize }: { label: string; value?: string; bold?: boolean; capitalize?: boolean }) {
+function ReviewRow({
+  label,
+  value,
+  bold,
+  capitalize,
+}: {
+  label: string;
+  value?: string;
+  bold?: boolean;
+  capitalize?: boolean;
+}) {
   return (
     <div className="flex justify-between gap-3 py-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={`text-right ${bold ? "font-serif text-lg font-bold text-primary" : "font-medium text-foreground"} ${capitalize ? "capitalize" : ""}`}>
+      <dd
+        className={`text-right ${bold ? "font-serif text-lg font-bold text-primary" : "font-medium text-foreground"} ${capitalize ? "capitalize" : ""}`}
+      >
         {value}
       </dd>
     </div>
@@ -1061,7 +1162,9 @@ ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Pl
   return (
     <div className="bg-cream">
       <div className="mx-auto max-w-xl px-4 py-16 text-center sm:px-6">
-        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${isLate ? "bg-mustard text-mustard-foreground" : "bg-primary text-primary-foreground"}`}>
+        <div
+          className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${isLate ? "bg-mustard text-mustard-foreground" : "bg-primary text-primary-foreground"}`}
+        >
           {isLate ? <Clock className="h-8 w-8" /> : <PartyPopper className="h-8 w-8" />}
         </div>
         <h1 className="mt-5 font-serif text-3xl font-bold text-foreground">
@@ -1078,9 +1181,17 @@ ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Pl
           <dl className="mt-4 space-y-2 text-sm">
             <ReviewRow label="Name" value={primary.customer_name} />
             {results.map((r) => (
-              <ReviewRow key={r.order_code} label={r.meal} value={`${r.delivery_date} · ${r.plan_name} × ${r.quantity}`} capitalize />
+              <ReviewRow
+                key={r.order_code}
+                label={r.meal}
+                value={`${r.delivery_date} · ${r.plan_name} × ${r.quantity}`}
+                capitalize
+              />
             ))}
-            <ReviewRow label="Payment" value={`${primary.payment_mode.toUpperCase()} (${primary.payment_status})`} />
+            <ReviewRow
+              label="Payment"
+              value={`${primary.payment_mode.toUpperCase()} (${primary.payment_status})`}
+            />
             <div className="border-t border-border pt-2">
               <ReviewRow label="Total" value={formatINR(total)} bold />
             </div>
@@ -1102,7 +1213,9 @@ ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Pl
                 <span className="flex items-center gap-1.5 rounded-full bg-secondary/50 px-2.5 py-1 font-medium text-foreground">
                   <s.icon className="h-3.5 w-3.5 text-primary" /> {s.label}
                 </span>
-                {i < NEXT_STEPS.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                {i < NEXT_STEPS.length - 1 && (
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                )}
               </li>
             ))}
           </ol>

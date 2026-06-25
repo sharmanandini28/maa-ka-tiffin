@@ -14,7 +14,8 @@ export function SectionHeading({
   align?: "center" | "left";
   className?: string;
 }) {
-  const alignment = align === "center" ? "mx-auto text-center items-center" : "text-left items-start";
+  const alignment =
+    align === "center" ? "mx-auto text-center items-center" : "text-left items-start";
   return (
     <Reveal className={`flex max-w-2xl flex-col ${alignment} ${className}`}>
       {eyebrow && (
@@ -27,7 +28,9 @@ export function SectionHeading({
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground text-pretty">{subtitle}</p>
+        <p className="mt-4 text-base leading-relaxed text-muted-foreground text-pretty">
+          {subtitle}
+        </p>
       )}
     </Reveal>
   );

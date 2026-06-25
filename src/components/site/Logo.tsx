@@ -13,7 +13,9 @@ export function Logo({
     <Link to="/" className={`group flex items-center gap-3 ${className}`}>
       <span
         className={`flex shrink-0 items-center justify-center rounded-full ring-1 transition-transform duration-300 group-hover:scale-105 ${
-          footer ? "h-12 w-12 bg-background/10 ring-background/20" : "h-12 w-12 bg-primary/8 ring-primary/15"
+          footer
+            ? "h-12 w-12 bg-background/10 ring-background/20"
+            : "h-12 w-12 bg-primary/8 ring-primary/15"
         }`}
       >
         <img

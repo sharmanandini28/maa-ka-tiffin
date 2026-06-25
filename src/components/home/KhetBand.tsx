@@ -5,9 +5,21 @@ import { Reveal } from "@/components/site/Reveal";
 import farmField from "@/assets/farm-field.jpg";
 
 const POINTS = [
-  { icon: Sprout, title: "Own Farm Produce", text: "A part of what we cook is grown on our own farm — picked fresh." },
-  { icon: Users, title: "Trusted Farmers", text: "The rest comes from carefully chosen local farmers we trust." },
-  { icon: Droplet, title: "No Palm Oil", text: "No palm oil, no reused oil, no cheap adulterated raw material." },
+  {
+    icon: Sprout,
+    title: "Own Farm Produce",
+    text: "A part of what we cook is grown on our own farm — picked fresh.",
+  },
+  {
+    icon: Users,
+    title: "Trusted Farmers",
+    text: "The rest comes from carefully chosen local farmers we trust.",
+  },
+  {
+    icon: Droplet,
+    title: "No Palm Oil",
+    text: "No palm oil, no reused oil, no cheap adulterated raw material.",
+  },
 ];
 
 export function KhetBand() {

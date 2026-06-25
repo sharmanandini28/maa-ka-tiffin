@@ -43,7 +43,9 @@ function PaymentsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-serif text-3xl font-bold text-foreground">Payments & Requests</h1>
-        <p className="text-sm text-muted-foreground">Verify UPI payments and approve late orders.</p>
+        <p className="text-sm text-muted-foreground">
+          Verify UPI payments and approve late orders.
+        </p>
       </div>
 
       {isLoading ? (
@@ -63,37 +65,69 @@ function PaymentsPage() {
               </span>
             </div>
             {upiPending.length === 0 ? (
-              <EmptyState icon={CheckCircle2} text="All UPI payments are verified. Nothing pending." />
+              <EmptyState
+                icon={CheckCircle2}
+                text="All UPI payments are verified. Nothing pending."
+              />
             ) : (
               <div className="divide-y divide-border">
                 {upiPending.map((o) => (
                   <div key={o.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
                     <div className="min-w-[160px]">
-                      <p className="font-mono text-xs font-semibold text-foreground">{o.order_code}</p>
+                      <p className="font-mono text-xs font-semibold text-foreground">
+                        {o.order_code}
+                      </p>
                       <p className="text-sm font-medium text-foreground">{o.customer_name}</p>
                       <p className="text-xs text-muted-foreground">{o.mobile}</p>
                     </div>
                     <div className="min-w-[140px] text-sm">
                       <p className="text-muted-foreground">UPI Txn ID</p>
-                      <p className="font-medium text-foreground">{o.upi_txn_id || <span className="text-muted-foreground">— not provided</span>}</p>
+                      <p className="font-medium text-foreground">
+                        {o.upi_txn_id || (
+                          <span className="text-muted-foreground">— not provided</span>
+                        )}
+                      </p>
                     </div>
                     <div className="text-sm">
                       <p className="text-muted-foreground">Amount</p>
-                      <p className="font-serif text-lg font-bold text-primary">{formatINR(o.total)}</p>
+                      <p className="font-serif text-lg font-bold text-primary">
+                        {formatINR(o.total)}
+                      </p>
                     </div>
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                       <PaymentBadge status={o.payment_status} />
-                      <Button size="sm" variant="default" onClick={() => patch(o.id, { payment_status: "paid" }, "Marked verified")}>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => patch(o.id, { payment_status: "paid" }, "Marked verified")}
+                      >
                         <Check className="h-4 w-4" /> Verify
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => patch(o.id, { payment_status: "failed" }, "Marked failed")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => patch(o.id, { payment_status: "failed" }, "Marked failed")}
+                      >
                         <X className="h-4 w-4" /> Reject
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => patch(o.id, { payment_mode: "cod", payment_status: "cod" }, "Switched to COD")}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          patch(
+                            o.id,
+                            { payment_mode: "cod", payment_status: "cod" },
+                            "Switched to COD",
+                          )
+                        }
+                      >
                         COD
                       </Button>
                       <a
-                        href={buildWhatsAppTo(o.whatsapp_number || o.mobile, `Hi ${o.customer_name}, we couldn't verify your UPI payment for ${o.order_code}. Could you share the screenshot?`)}
+                        href={buildWhatsAppTo(
+                          o.whatsapp_number || o.mobile,
+                          `Hi ${o.customer_name}, we couldn't verify your UPI payment for ${o.order_code}. Could you share the screenshot?`,
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-secondary"
@@ -146,25 +180,49 @@ function LateRow({
       <div className="min-w-[160px]">
         <p className="font-mono text-xs font-semibold text-foreground">{o.order_code}</p>
         <p className="text-sm font-medium text-foreground">{o.customer_name}</p>
-        <p className="text-xs text-muted-foreground">{o.mobile} · {o.sector}</p>
+        <p className="text-xs text-muted-foreground">
+          {o.mobile} · {o.sector}
+        </p>
       </div>
       <div className="text-sm">
         <p className="text-muted-foreground">Requested</p>
-        <p className="font-medium capitalize text-foreground">{o.meal} · {o.delivery_date}</p>
+        <p className="font-medium capitalize text-foreground">
+          {o.meal} · {o.delivery_date}
+        </p>
       </div>
       <div className="text-sm">
         <p className="text-muted-foreground">Qty / Amount</p>
-        <p className="font-medium text-foreground">{o.quantity} · {formatINR(o.total)}</p>
+        <p className="font-medium text-foreground">
+          {o.quantity} · {formatINR(o.total)}
+        </p>
       </div>
       <div className="ml-auto flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="default" onClick={() => onPatch(o.id, { is_late_request: false, delivery_state: "confirmed" }, "Late order approved")}>
+        <Button
+          size="sm"
+          variant="default"
+          onClick={() =>
+            onPatch(
+              o.id,
+              { is_late_request: false, delivery_state: "confirmed" },
+              "Late order approved",
+            )
+          }
+        >
           <Check className="h-4 w-4" /> Approve
         </Button>
-        <Button size="sm" variant="outline" className="text-destructive" onClick={() => onPatch(o.id, { delivery_state: "cancelled" }, "Late order rejected")}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-destructive"
+          onClick={() => onPatch(o.id, { delivery_state: "cancelled" }, "Late order rejected")}
+        >
           <X className="h-4 w-4" /> Reject
         </Button>
         <a
-          href={buildWhatsAppTo(o.whatsapp_number || o.mobile, `Hi ${o.customer_name}, about your late ${o.meal} request (${o.order_code}) for ${o.delivery_date}...`)}
+          href={buildWhatsAppTo(
+            o.whatsapp_number || o.mobile,
+            `Hi ${o.customer_name}, about your late ${o.meal} request (${o.order_code}) for ${o.delivery_date}...`,
+          )}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-secondary"

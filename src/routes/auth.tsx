@@ -10,16 +10,14 @@ import { Logo } from "@/components/site/Logo";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    meta: [
-      { title: "Admin Login — Maa Jaisa Tiffin" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Admin Login — Maa Jaisa Tiffin" }, { name: "robots", content: "noindex" }],
   }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const allowAdminSignup = import.meta.env.VITE_ALLOW_ADMIN_SIGNUP === "true";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +31,10 @@ function AuthPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "signup" && !allowAdminSignup) {
+      toast.error("Admin signup is disabled. Please contact the site owner.");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -57,17 +59,22 @@ function AuthPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4">
-      <Link to="/" className="mb-8">
-        <Logo />
-      </Link>
+      <Logo className="mb-8" />
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-7 shadow-lg">
         <div className="flex items-center gap-2 text-primary">
           <Lock className="h-5 w-5" />
           <h1 className="font-serif text-2xl font-bold text-foreground">Admin Access</h1>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {mode === "signin" ? "Sign in to manage your tiffin service." : "Create the admin account."}
+          {mode === "signin"
+            ? "Sign in to manage your tiffin service."
+            : "Create the admin account."}
         </p>
+        {!allowAdminSignup && (
+          <p className="mt-3 rounded-md border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
+            Admin signup is disabled. Please contact the site owner.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid gap-1.5">
@@ -103,14 +110,16 @@ function AuthPage() {
           </Button>
         </form>
 
-        <button
-          onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-          className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-primary"
-        >
-          {mode === "signin"
-            ? "First time? Create the admin account"
-            : "Already have an account? Sign in"}
-        </button>
+        {allowAdminSignup && (
+          <button
+            onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
+            className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-primary"
+          >
+            {mode === "signin"
+              ? "First time? Create the admin account"
+              : "Already have an account? Sign in"}
+          </button>
+        )}
       </div>
       <Link to="/" className="mt-6 text-sm text-muted-foreground hover:text-primary">
         ← Back to website

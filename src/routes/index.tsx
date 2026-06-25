@@ -15,6 +15,7 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { FaqPreview } from "@/components/home/FaqPreview";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { plansQueryOptions, weekMenuQueryOptions } from "@/lib/queries";
+import { SUPPORT_PHONE_DISPLAY } from "@/lib/brand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,7 +56,7 @@ export const Route = createFileRoute("/")({
             addressRegion: "Uttar Pradesh",
             addressCountry: "IN",
           },
-          telephone: "+91-93112-34567",
+          telephone: SUPPORT_PHONE_DISPLAY,
           priceRange: "₹₹",
         }),
       },

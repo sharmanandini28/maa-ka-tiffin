@@ -3,11 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export interface PlanDTO {
@@ -74,18 +72,16 @@ export interface ZoneDTO {
   cod_allowed: boolean;
 }
 
-export const getZones = createServerFn({ method: "GET" }).handler(
-  async (): Promise<ZoneDTO[]> => {
-    const supabase = publicClient();
-    const { data, error } = await supabase
-      .from("delivery_zones")
-      .select("sector, delivery_fee, min_qty, meals, subscription_only, cod_allowed")
-      .eq("active", true)
-      .order("sort_order", { ascending: true });
-    if (error) {
-      console.error("getZones error", error.message);
-      return [];
-    }
-    return data ?? [];
-  },
-);
+export const getZones = createServerFn({ method: "GET" }).handler(async (): Promise<ZoneDTO[]> => {
+  const supabase = publicClient();
+  const { data, error } = await supabase
+    .from("delivery_zones")
+    .select("sector, delivery_fee, min_qty, meals, subscription_only, cod_allowed")
+    .eq("active", true)
+    .order("sort_order", { ascending: true });
+  if (error) {
+    console.error("getZones error", error.message);
+    return [];
+  }
+  return data ?? [];
+});

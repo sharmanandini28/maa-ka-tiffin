@@ -1,5 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Leaf, ShoppingBag, BookOpen, Clock, Container, Soup, Star, ShieldCheck } from "lucide-react";
+import {
+  Leaf,
+  ShoppingBag,
+  BookOpen,
+  Clock,
+  Container,
+  Soup,
+  Star,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/site/Reveal";
 import heroTiffin from "@/assets/thali-spread.jpg";
@@ -28,8 +37,8 @@ export function Hero() {
           </Reveal>
           <Reveal delay={150}>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground text-pretty">
-              Apne khet aur trusted kisan source ke saman se bana fresh ghar ka khana — daily lunch &
-              dinner, delivered hot to your door.
+              Apne khet aur trusted kisan source ke saman se bana fresh ghar ka khana — daily lunch
+              & dinner, delivered hot to your door.
             </p>
           </Reveal>
 
@@ -72,7 +81,8 @@ export function Hero() {
                   <div>
                     <p className="font-semibold text-primary">Tomorrow's Lunch</p>
                     <p className="text-sm text-muted-foreground">
-                      Before <span className="font-semibold text-foreground">12:00 AM</span> (midnight)
+                      Before <span className="font-semibold text-foreground">12:00 AM</span>{" "}
+                      (midnight)
                     </p>
                   </div>
                 </div>

@@ -23,7 +23,10 @@ export const Route = createFileRoute("/faq")({
           "Frequently asked questions about Maa Jaisa Tiffin — ordering, cut-off rules, meal plans, pause, cancellation, delivery, payment and purity in Noida.",
       },
       { property: "og:title", content: "FAQ — Maa Jaisa Tiffin Noida" },
-      { property: "og:description", content: "Answers about ordering, plans, delivery and payment." },
+      {
+        property: "og:description",
+        content: "Answers about ordering, plans, delivery and payment.",
+      },
       { property: "og:url", content: "/faq" },
     ],
     links: [{ rel: "canonical", href: "/faq" }],

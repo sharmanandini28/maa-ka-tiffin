@@ -14,7 +14,6 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -96,11 +95,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Maa Jaisa Tiffin — Ghar Jaisa Shuddh Tiffin in Noida" },
-      { name: "description", content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals." },
-      { property: "og:description", content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals." },
-      { name: "twitter:description", content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e0b61f0c-4447-4bdb-8b91-ee83303c7daf/id-preview-b03ab64e--6e242204-f998-4839-8994-91a0ebf35f6e.lovable.app-1782185125833.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e0b61f0c-4447-4bdb-8b91-ee83303c7daf/id-preview-b03ab64e--6e242204-f998-4839-8994-91a0ebf35f6e.lovable.app-1782185125833.png" },
+      {
+        name: "description",
+        content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals.",
+      },
+      {
+        property: "og:description",
+        content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals.",
+      },
+      {
+        name: "twitter:description",
+        content: "Noida's home-style tiffin service offering pure, fresh, and hygienic meals.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e0b61f0c-4447-4bdb-8b91-ee83303c7daf/id-preview-b03ab64e--6e242204-f998-4839-8994-91a0ebf35f6e.lovable.app-1782185125833.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e0b61f0c-4447-4bdb-8b91-ee83303c7daf/id-preview-b03ab64e--6e242204-f998-4839-8994-91a0ebf35f6e.lovable.app-1782185125833.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

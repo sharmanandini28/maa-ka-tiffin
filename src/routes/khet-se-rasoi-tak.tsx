@@ -30,17 +30,49 @@ export const Route = createFileRoute("/khet-se-rasoi-tak")({
 });
 
 const PRINCIPLES = [
-  { icon: Sprout, title: "Own Farm Produce", body: "A part of what we cook is grown on our own farm — picked fresh and used quickly." },
-  { icon: Users, title: "Trusted Farmers", body: "The rest comes from carefully chosen local farmers we know and trust." },
-  { icon: Wheat, title: "Quality Staples", body: "Chawal, atta, dal and oil sourced for purity — not the cheapest price." },
-  { icon: Droplet, title: "Never Palm Oil", body: "No palm oil, no reused oil, no cheap adulterated raw material. Ever." },
+  {
+    icon: Sprout,
+    title: "Own Farm Produce",
+    body: "A part of what we cook is grown on our own farm — picked fresh and used quickly.",
+  },
+  {
+    icon: Users,
+    title: "Trusted Farmers",
+    body: "The rest comes from carefully chosen local farmers we know and trust.",
+  },
+  {
+    icon: Wheat,
+    title: "Quality Staples",
+    body: "Chawal, atta, dal and oil sourced for purity — not the cheapest price.",
+  },
+  {
+    icon: Droplet,
+    title: "Never Palm Oil",
+    body: "No palm oil, no reused oil, no cheap adulterated raw material. Ever.",
+  },
 ];
 
 const JOURNEY = [
-  { icon: Sprout, title: "Grown & Harvested", body: "Seasonal vegetables and grains grown on our farm and trusted partner fields." },
-  { icon: Truck, title: "Sourced Fresh", body: "Picked and brought to our kitchen quickly — no long storage, no middlemen games." },
-  { icon: Droplet, title: "Cleaned & Checked", body: "Washed in clean water and checked for quality before anything touches the pan." },
-  { icon: ChefHat, title: "Cooked Like Home", body: "Freshly cooked daily, light on masala, balanced and wholesome." },
+  {
+    icon: Sprout,
+    title: "Grown & Harvested",
+    body: "Seasonal vegetables and grains grown on our farm and trusted partner fields.",
+  },
+  {
+    icon: Truck,
+    title: "Sourced Fresh",
+    body: "Picked and brought to our kitchen quickly — no long storage, no middlemen games.",
+  },
+  {
+    icon: Droplet,
+    title: "Cleaned & Checked",
+    body: "Washed in clean water and checked for quality before anything touches the pan.",
+  },
+  {
+    icon: ChefHat,
+    title: "Cooked Like Home",
+    body: "Freshly cooked daily, light on masala, balanced and wholesome.",
+  },
 ];
 
 function KhetPage() {
@@ -48,7 +80,11 @@ function KhetPage() {
     <SiteLayout>
       <PageHero
         eyebrow="Khet Se Rasoi Tak"
-        title={<>From our fields to <span className="text-primary">your plate</span></>}
+        title={
+          <>
+            From our fields to <span className="text-primary">your plate</span>
+          </>
+        }
         subtitle="Humara focus sirf taste par nahi, purity par bhi hai. Maximum saman apne khet ya trusted kisan source se aata hai — traceable, honest and pure."
       />
 
@@ -72,10 +108,10 @@ function KhetPage() {
               Khana jo sirf pet nahi, bharosa bhi bhare
             </h2>
             <p className="mt-4 leading-relaxed text-muted-foreground text-pretty">
-              Hum maximum saman apne khet aur trusted kisan source se laate hain. Chawal, oil, sabzi,
-              atta aur dal jaise raw materials ko quality ke sath select kiya jata hai. Hum palm oil,
-              cheap local saman, artificial colour aur heavy masala se bachkar simple ghar jaisa khana
-              banate hain.
+              Hum maximum saman apne khet aur trusted kisan source se laate hain. Chawal, oil,
+              sabzi, atta aur dal jaise raw materials ko quality ke sath select kiya jata hai. Hum
+              palm oil, cheap local saman, artificial colour aur heavy masala se bachkar simple ghar
+              jaisa khana banate hain.
             </p>
             <p className="mt-5 flex items-center gap-2 font-serif text-lg font-semibold text-primary">
               <ShieldCheck className="h-5 w-5" /> Pure ingredients. Thoughtful meals.
@@ -87,7 +123,11 @@ function KhetPage() {
       {/* Principles */}
       <section className="bg-cream py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <SectionHeading className="mb-12" eyebrow="What Goes In" title="Our food quality principles" />
+          <SectionHeading
+            className="mb-12"
+            eyebrow="What Goes In"
+            title="Our food quality principles"
+          />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PRINCIPLES.map((p, i) => (
               <Reveal key={p.title} delay={i * 90}>
@@ -124,7 +164,9 @@ function KhetPage() {
                   </span>
                 </div>
                 <h3 className="mt-4 font-serif text-lg font-bold text-foreground">{s.title}</h3>
-                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">{s.body}</p>
+                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">
+                  {s.body}
+                </p>
               </Reveal>
             ))}
           </div>
@@ -142,13 +184,23 @@ function KhetPage() {
               The way your mother would cook it
             </h2>
             <p className="mt-4 leading-relaxed text-muted-foreground text-pretty">
-              Freshly cooked daily in a clean, home-style kitchen. Pre-order based cooking means less
-              wastage and fresher food — never stale, never reheated for days. Just simple, balanced
-              meals that taste like home.
+              Freshly cooked daily in a clean, home-style kitchen. Pre-order based cooking means
+              less wastage and fresher food — never stale, never reheated for days. Just simple,
+              balanced meals that taste like home.
             </p>
             <div className="mt-6 grid grid-cols-2 gap-4">
-              <img src={farmBasket} alt="Basket of farm vegetables" loading="lazy" className="aspect-square w-full rounded-2xl object-cover shadow-soft" />
-              <img src={cooking} alt="Fresh home cooking" loading="lazy" className="aspect-square w-full rounded-2xl object-cover shadow-soft" />
+              <img
+                src={farmBasket}
+                alt="Basket of farm vegetables"
+                loading="lazy"
+                className="aspect-square w-full rounded-2xl object-cover shadow-soft"
+              />
+              <img
+                src={cooking}
+                alt="Fresh home cooking"
+                loading="lazy"
+                className="aspect-square w-full rounded-2xl object-cover shadow-soft"
+              />
             </div>
           </Reveal>
           <Reveal variant="right">
@@ -161,7 +213,9 @@ function KhetPage() {
                 That single belief shapes every decision: what we source, how we clean, how we cook
                 and how we pack. No palm oil, no milawat, no shortcuts — just the Maa Jaisa promise.
               </p>
-              <p className="mt-5 font-serif text-base font-semibold text-primary">— Team Maa Jaisa Tiffin</p>
+              <p className="mt-5 font-serif text-base font-semibold text-primary">
+                — Team Maa Jaisa Tiffin
+              </p>
             </div>
           </Reveal>
         </div>

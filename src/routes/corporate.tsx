@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, Users, GraduationCap, Utensils, CheckCircle2, MessageCircle } from "lucide-react";
+import {
+  Building2,
+  Users,
+  GraduationCap,
+  Utensils,
+  CheckCircle2,
+  MessageCircle,
+} from "lucide-react";
 import { SiteLayout, PageHero } from "@/components/site/SiteLayout";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { Reveal } from "@/components/site/Reveal";
@@ -32,9 +39,21 @@ export const Route = createFileRoute("/corporate")({
 });
 
 const PLANS = [
-  { icon: Building2, title: "Office Group Lunch", body: "Daily team lunches delivered hot to your workplace. Fixed menus, billed monthly." },
-  { icon: GraduationCap, title: "Startup Lunch Service", body: "Healthy, affordable meals for growing teams. Flexible headcount each day." },
-  { icon: Users, title: "PG / Hostel Bulk", body: "Reliable lunch & dinner for paying-guest accommodations and hostels at scale." },
+  {
+    icon: Building2,
+    title: "Office Group Lunch",
+    body: "Daily team lunches delivered hot to your workplace. Fixed menus, billed monthly.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Startup Lunch Service",
+    body: "Healthy, affordable meals for growing teams. Flexible headcount each day.",
+  },
+  {
+    icon: Users,
+    title: "PG / Hostel Bulk",
+    body: "Reliable lunch & dinner for paying-guest accommodations and hostels at scale.",
+  },
 ];
 
 const PERKS = [
@@ -47,7 +66,14 @@ const PERKS = [
 ];
 
 function CorporatePage() {
-  const [form, setForm] = useState({ name: "", org: "", phone: "", meals: "", area: "", notes: "" });
+  const [form, setForm] = useState({
+    name: "",
+    org: "",
+    phone: "",
+    meals: "",
+    area: "",
+    notes: "",
+  });
 
   const message =
     `Corporate / Bulk tiffin enquiry\n` +
@@ -62,7 +88,11 @@ function CorporatePage() {
     <SiteLayout>
       <PageHero
         eyebrow="Corporate & Bulk"
-        title={<>Team lunches, <span className="text-primary">done right</span></>}
+        title={
+          <>
+            Team lunches, <span className="text-primary">done right</span>
+          </>
+        }
         subtitle="Reliable bulk tiffin for offices, startups, PGs and hostels across Noida — pure, home-style and always on time. Tell us your needs and we'll build a plan."
       />
 
@@ -121,27 +151,64 @@ function CorporatePage() {
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <Label htmlFor="name">Your name</Label>
-                  <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5" placeholder="Full name" />
+                  <Input
+                    id="name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="Full name"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="org">Organisation</Label>
-                  <Input id="org" value={form.org} onChange={(e) => setForm({ ...form, org: e.target.value })} className="mt-1.5" placeholder="Company / PG name" />
+                  <Input
+                    id="org"
+                    value={form.org}
+                    onChange={(e) => setForm({ ...form, org: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="Company / PG name"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1.5" placeholder="WhatsApp number" />
+                  <Input
+                    id="phone"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="WhatsApp number"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="meals">Meals / day</Label>
-                  <Input id="meals" value={form.meals} onChange={(e) => setForm({ ...form, meals: e.target.value })} className="mt-1.5" placeholder="e.g. 25" />
+                  <Input
+                    id="meals"
+                    value={form.meals}
+                    onChange={(e) => setForm({ ...form, meals: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="e.g. 25"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="area">Area / Sector</Label>
-                  <Input id="area" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} className="mt-1.5" placeholder="e.g. Sector 62" />
+                  <Input
+                    id="area"
+                    value={form.area}
+                    onChange={(e) => setForm({ ...form, area: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="e.g. Sector 62"
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <Label htmlFor="notes">Notes</Label>
-                  <Textarea id="notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1.5" placeholder="Veg preferences, timing, etc." rows={3} />
+                  <Textarea
+                    id="notes"
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    className="mt-1.5"
+                    placeholder="Veg preferences, timing, etc."
+                    rows={3}
+                  />
                 </div>
               </div>
               <Button asChild variant="mustard" size="lg" className="mt-5 w-full">

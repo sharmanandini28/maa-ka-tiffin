@@ -1,13 +1,7 @@
 // Shared status configuration for orders — payment + delivery.
 // Used by the admin panel and the order confirmation flow.
 
-export type PaymentStatus =
-  | "pending"
-  | "paid"
-  | "partial"
-  | "cod"
-  | "refunded"
-  | "failed";
+export type PaymentStatus = "pending" | "paid" | "partial" | "cod" | "refunded" | "failed";
 
 export type DeliveryStatus =
   | "received"

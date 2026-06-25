@@ -25,7 +25,10 @@ export const Route = createFileRoute("/hygiene")({
           "Our hygiene promise: fresh cooking daily, clean kitchen, food-grade packaging, no stale food, no reused oil, no palm oil. Tiffin you can trust in Noida.",
       },
       { property: "og:title", content: "Hygiene Promise — Maa Jaisa Tiffin Noida" },
-      { property: "og:description", content: "Clean kitchen, fresh cooking, food-grade packaging." },
+      {
+        property: "og:description",
+        content: "Clean kitchen, fresh cooking, food-grade packaging.",
+      },
       { property: "og:url", content: "/hygiene" },
     ],
     links: [{ rel: "canonical", href: "/hygiene" }],
@@ -34,12 +37,36 @@ export const Route = createFileRoute("/hygiene")({
 });
 
 const PROCESS = [
-  { icon: Droplets, title: "Ingredient Cleaning", body: "Every vegetable and grain is washed thoroughly in clean, drinking-quality water before cooking." },
-  { icon: Flame, title: "Fresh Daily Cooking", body: "Cooked fresh every single day on a pre-order basis — never stored, never reheated for days." },
-  { icon: Refrigerator, title: "Cold-Chain Care", body: "Perishables are stored correctly and used quickly. No stale or day-old food, ever." },
-  { icon: Package, title: "Food-Grade Packaging", body: "Leak-proof, food-grade containers that keep your meal hot, fresh and spill-free." },
-  { icon: HandPlatter, title: "Staff Hygiene", body: "Daily hygiene checklist — clean hands, aprons, hair caps and a sanitised cooking area." },
-  { icon: ShieldCheck, title: "Quality Oil & Water", body: "Only clean, trusted cooking oil — never palm or reused oil — and purified water throughout." },
+  {
+    icon: Droplets,
+    title: "Ingredient Cleaning",
+    body: "Every vegetable and grain is washed thoroughly in clean, drinking-quality water before cooking.",
+  },
+  {
+    icon: Flame,
+    title: "Fresh Daily Cooking",
+    body: "Cooked fresh every single day on a pre-order basis — never stored, never reheated for days.",
+  },
+  {
+    icon: Refrigerator,
+    title: "Cold-Chain Care",
+    body: "Perishables are stored correctly and used quickly. No stale or day-old food, ever.",
+  },
+  {
+    icon: Package,
+    title: "Food-Grade Packaging",
+    body: "Leak-proof, food-grade containers that keep your meal hot, fresh and spill-free.",
+  },
+  {
+    icon: HandPlatter,
+    title: "Staff Hygiene",
+    body: "Daily hygiene checklist — clean hands, aprons, hair caps and a sanitised cooking area.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Quality Oil & Water",
+    body: "Only clean, trusted cooking oil — never palm or reused oil — and purified water throughout.",
+  },
 ];
 
 const PROMISES = [
@@ -62,7 +89,11 @@ function HygienePage() {
     <SiteLayout>
       <PageHero
         eyebrow="Our Promise"
-        title={<>Hygiene you can <span className="text-primary">trust</span></>}
+        title={
+          <>
+            Hygiene you can <span className="text-primary">trust</span>
+          </>
+        }
         subtitle="Hum food ko sirf business nahi, trust ke form me deliver karte hain. Here's exactly how we keep every meal pure, fresh and safe."
       />
 
@@ -87,8 +118,8 @@ function HygienePage() {
             </h2>
             <p className="mt-4 leading-relaxed text-muted-foreground text-pretty">
               We cook the way a careful mother would — in a spotless kitchen, with clean hands, pure
-              water and honest ingredients. Pre-order based cooking means we make only what's needed,
-              so food is always fresh and never wasted.
+              water and honest ingredients. Pre-order based cooking means we make only what's
+              needed, so food is always fresh and never wasted.
             </p>
           </Reveal>
         </div>
@@ -122,7 +153,11 @@ function HygienePage() {
       {/* Checklist */}
       <section className="bg-background py-16 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <SectionHeading className="mb-10" eyebrow="The Checklist" title="Our 12-point hygiene promise" />
+          <SectionHeading
+            className="mb-10"
+            eyebrow="The Checklist"
+            title="Our 12-point hygiene promise"
+          />
           <ul className="grid gap-3 sm:grid-cols-2">
             {PROMISES.map((p, i) => (
               <Reveal key={p} delay={(i % 2) * 60}>

@@ -38,7 +38,11 @@ function DeliveryAreasPage() {
     <SiteLayout>
       <PageHero
         eyebrow="Delivery Areas"
-        title={<>Now serving across <span className="text-primary">Noida</span></>}
+        title={
+          <>
+            Now serving across <span className="text-primary">Noida</span>
+          </>
+        }
         subtitle="Daily fresh lunch & dinner delivered to homes, PGs, societies and offices. Find your sector below — and if you don't see it, just ask."
       />
 
@@ -99,8 +103,8 @@ function DeliveryAreasPage() {
           <Reveal>
             <h3 className="font-serif text-2xl font-bold text-foreground">Expanding soon</h3>
             <p className="mt-2 text-muted-foreground">
-              We're growing fast. These areas are next on our map — request yours and we'll prioritise
-              it.
+              We're growing fast. These areas are next on our map — request yours and we'll
+              prioritise it.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {soon.map((z) => (

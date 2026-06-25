@@ -16,8 +16,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        mustard:
-          "bg-mustard text-mustard-foreground shadow hover:bg-mustard/90 font-semibold",
+        mustard: "bg-mustard text-mustard-foreground shadow hover:bg-mustard/90 font-semibold",
         terracotta:
           "bg-terracotta text-terracotta-foreground shadow hover:bg-terracotta/90 font-semibold",
         hero: "border-2 border-primary/30 bg-background text-primary shadow-sm hover:bg-primary/5 font-semibold",

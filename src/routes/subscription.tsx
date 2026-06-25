@@ -41,16 +41,44 @@ export const Route = createFileRoute("/subscription")({
 });
 
 const HOW = [
-  { icon: Wallet, title: "Buy Meal Credits", body: "Choose a weekly or monthly plan and get a set of meal credits — e.g. 26 lunches a month." },
-  { icon: CalendarRange, title: "Use Them Daily", body: "Each delivered meal uses one credit. Skip a day and the credit simply stays with you." },
-  { icon: PauseCircle, title: "Pause Anytime", body: "Travelling or eating out? Pause before the cut-off — up to 4 pauses every month." },
-  { icon: Repeat, title: "Auto Renew", body: "Running low? Top up or renew in a tap. No daily ordering, no daily payments." },
+  {
+    icon: Wallet,
+    title: "Buy Meal Credits",
+    body: "Choose a weekly or monthly plan and get a set of meal credits — e.g. 26 lunches a month.",
+  },
+  {
+    icon: CalendarRange,
+    title: "Use Them Daily",
+    body: "Each delivered meal uses one credit. Skip a day and the credit simply stays with you.",
+  },
+  {
+    icon: PauseCircle,
+    title: "Pause Anytime",
+    body: "Travelling or eating out? Pause before the cut-off — up to 4 pauses every month.",
+  },
+  {
+    icon: Repeat,
+    title: "Auto Renew",
+    body: "Running low? Top up or renew in a tap. No daily ordering, no daily payments.",
+  },
 ];
 
 const BEST_FOR = [
-  { icon: Briefcase, title: "Office Employees", body: "Hot, healthy lunch at your desk — no more greasy canteen or last-minute Swiggy." },
-  { icon: GraduationCap, title: "PG & Hostel Residents", body: "Ghar jaisa khana, daily. The single best upgrade to life away from home." },
-  { icon: Users, title: "Working Couples", body: "Skip the cooking after long days. Lunch + dinner handled, every single day." },
+  {
+    icon: Briefcase,
+    title: "Office Employees",
+    body: "Hot, healthy lunch at your desk — no more greasy canteen or last-minute Swiggy.",
+  },
+  {
+    icon: GraduationCap,
+    title: "PG & Hostel Residents",
+    body: "Ghar jaisa khana, daily. The single best upgrade to life away from home.",
+  },
+  {
+    icon: Users,
+    title: "Working Couples",
+    body: "Skip the cooking after long days. Lunch + dinner handled, every single day.",
+  },
 ];
 
 const PERKS = [
@@ -67,7 +95,11 @@ function SubscriptionPage() {
     <SiteLayout>
       <PageHero
         eyebrow="Subscription"
-        title={<>Ghar ka khana, on <span className="text-primary">auto-pilot</span></>}
+        title={
+          <>
+            Ghar ka khana, on <span className="text-primary">auto-pilot</span>
+          </>
+        }
         subtitle="A monthly tiffin subscription built for busy lives in Noida. Buy meal credits once, eat fresh home-style food every day — with the flexibility to pause whenever you need."
       >
         <Button asChild variant="mustard" size="xl">
@@ -97,7 +129,9 @@ function SubscriptionPage() {
                   </span>
                 </div>
                 <h3 className="mt-4 font-serif text-lg font-bold text-foreground">{h.title}</h3>
-                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">{h.body}</p>
+                <p className="mx-auto mt-1.5 max-w-[16rem] text-sm text-muted-foreground">
+                  {h.body}
+                </p>
               </Reveal>
             ))}
           </div>
@@ -112,7 +146,11 @@ function SubscriptionPage() {
           title="Weekly & monthly plans"
           subtitle="Start with a trial, then go weekly or monthly. Lunch only, dinner only, or both."
         />
-        <Suspense fallback={<div className="mx-auto h-80 max-w-7xl animate-pulse rounded-xl bg-secondary/30" />}>
+        <Suspense
+          fallback={
+            <div className="mx-auto h-80 max-w-7xl animate-pulse rounded-xl bg-secondary/30" />
+          }
+        >
           <PlansSection withHeading={false} compact />
         </Suspense>
       </section>
@@ -120,7 +158,11 @@ function SubscriptionPage() {
       {/* Best for */}
       <section className="bg-background py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <SectionHeading className="mb-12" eyebrow="Made For You" title="Who loves a subscription" />
+          <SectionHeading
+            className="mb-12"
+            eyebrow="Made For You"
+            title="Who loves a subscription"
+          />
           <div className="grid gap-5 sm:grid-cols-3">
             {BEST_FOR.map((b, i) => (
               <Reveal key={b.title} delay={i * 100}>

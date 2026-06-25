@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
+import { SUPPORT_PHONE_DISPLAY } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
@@ -90,14 +91,18 @@ function AdminLayout() {
         </nav>
         <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-2 px-3 py-2 text-xs text-sidebar-foreground/70">
-            <Headphones className="h-4 w-4" /> +91 93112 34567
+            <Headphones className="h-4 w-4" /> {SUPPORT_PHONE_DISPLAY}
           </div>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
             className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent"
           >
-            {signingOut ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogOut className="h-5 w-5" />}
+            {signingOut ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <LogOut className="h-5 w-5" />
+            )}
             Sign Out
           </button>
         </div>

@@ -10,17 +10,30 @@
 export type Meal = "lunch" | "dinner";
 
 export const MAX_ADVANCE_DAYS = 7;
+export const INDIA_TIME_ZONE = "Asia/Kolkata";
+
+const INDIA_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function indiaParts(d: Date): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: INDIA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return { year: get("year"), month: get("month"), day: get("day") };
+}
 
 export function toDateKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  const { year, month, day } = indiaParts(d);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 export function parseDateKey(key: string): Date {
   const [y, m, d] = key.split("-").map(Number);
-  return new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+  return new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0) - INDIA_OFFSET_MS);
 }
 
 export interface CutoffResult {
@@ -31,13 +44,9 @@ export interface CutoffResult {
 }
 
 export function getCutoffMoment(meal: Meal, dateKey: string): Date {
-  const base = parseDateKey(dateKey);
-  if (meal === "lunch") {
-    // midnight at the start of the delivery day
-    return new Date(base.getFullYear(), base.getMonth(), base.getDate(), 0, 0, 0, 0);
-  }
-  // dinner: noon on the delivery day
-  return new Date(base.getFullYear(), base.getMonth(), base.getDate(), 12, 0, 0, 0);
+  const startOfIndiaDay = parseDateKey(dateKey);
+  if (meal === "lunch") return startOfIndiaDay;
+  return new Date(startOfIndiaDay.getTime() + 12 * 60 * 60 * 1000);
 }
 
 export function checkCutoff(meal: Meal, dateKey: string, now: Date = new Date()): CutoffResult {
@@ -46,7 +55,7 @@ export function checkCutoff(meal: Meal, dateKey: string, now: Date = new Date())
   const today = parseDateKey(toDateKey(now));
   const target = parseDateKey(dateKey);
   const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + MAX_ADVANCE_DAYS);
+  maxDate.setTime(maxDate.getTime() + MAX_ADVANCE_DAYS * DAY_MS);
 
   if (target < today) {
     return { allowed: false, cutoff, reason: "This date has already passed." };

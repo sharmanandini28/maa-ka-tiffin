@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { MessageCircle, MapPin, Phone, Clock, Leaf, ArrowRight } from "lucide-react";
 import { Logo } from "./Logo";
-import { buildWhatsAppLink } from "@/lib/brand";
+import { buildWhatsAppLink, SUPPORT_PHONE_DISPLAY } from "@/lib/brand";
 
 const COLS: { title: string; links: { to: string; label: string }[] }[] = [
   {
@@ -70,15 +70,15 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Ghar Ka Khana, Pyaar Ke Saath. Pre-order based home-style vegetarian tiffin for Noida —
-              made with farm-fresh, trusted-source ingredients.
+              Ghar Ka Khana, Pyaar Ke Saath. Pre-order based home-style vegetarian tiffin for Noida
+              — made with farm-fresh, trusted-source ingredients.
             </p>
             <div className="mt-4 space-y-2 text-sm text-muted-foreground">
               <p className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" /> Noida, Uttar Pradesh
               </p>
               <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" /> +91 93112 34567
+                <Phone className="h-4 w-4 text-primary" /> {SUPPORT_PHONE_DISPLAY}
               </p>
               <p className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" /> Lunch 12–2 PM · Dinner 7–9 PM
@@ -127,9 +127,6 @@ export function Footer() {
         <div className="border-t border-border/60">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:px-6">
             <p>© {new Date().getFullYear()} Maa Jaisa Tiffin. All rights reserved.</p>
-            <Link to="/auth" className="transition-colors hover:text-primary">
-              Admin Login
-            </Link>
           </div>
         </div>
       </div>

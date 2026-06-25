@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PolicyPage } from "@/components/site/PolicyPage";
+import { SUPPORT_PHONE_DISPLAY } from "@/lib/brand";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/privacy")({
         },
         {
           heading: "Contact",
-          items: ["For any privacy questions, reach us on WhatsApp at +91 93112 34567."],
+          items: [`For any privacy questions, reach us on WhatsApp at ${SUPPORT_PHONE_DISPLAY}.`],
         },
       ]}
     />

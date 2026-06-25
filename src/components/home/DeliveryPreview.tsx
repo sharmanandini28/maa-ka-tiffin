@@ -25,14 +25,19 @@ export function DeliveryPreview() {
                     : "border-border bg-secondary/40 text-muted-foreground"
                 }`}
               >
-                <MapPin className={`h-4 w-4 ${z.live ? "text-primary" : "text-muted-foreground"}`} />
+                <MapPin
+                  className={`h-4 w-4 ${z.live ? "text-primary" : "text-muted-foreground"}`}
+                />
                 {z.sector}
                 {!z.live && <span className="text-xs">(soon)</span>}
               </span>
             </Reveal>
           ))}
         </div>
-        <Reveal delay={120} className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <Reveal
+          delay={120}
+          className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+        >
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Truck className="h-4 w-4 text-primary" /> Lunch 12–2 PM · Dinner 7–9 PM
           </p>

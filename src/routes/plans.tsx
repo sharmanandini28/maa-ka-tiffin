@@ -62,7 +62,11 @@ function PlansPage() {
         subtitle="Choose what suits your routine and appetite. All plans use farm-fresh, trusted-source ingredients with no palm oil."
       />
       <section className="bg-cream py-14">
-        <Suspense fallback={<div className="mx-auto h-80 max-w-7xl animate-pulse rounded-xl bg-secondary/30" />}>
+        <Suspense
+          fallback={
+            <div className="mx-auto h-80 max-w-7xl animate-pulse rounded-xl bg-secondary/30" />
+          }
+        >
           <PlansSection withHeading={false} compact />
         </Suspense>
       </section>

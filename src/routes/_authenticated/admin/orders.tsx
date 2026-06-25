@@ -46,7 +46,8 @@ function OrdersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const sectors = useMemo(
-    () => Array.from(new Set([...zones.map((z) => z.sector), ...orders.map((o) => o.sector)])).sort(),
+    () =>
+      Array.from(new Set([...zones.map((z) => z.sector), ...orders.map((o) => o.sector)])).sort(),
     [zones, orders],
   );
   const plans = useMemo(() => Array.from(new Set(orders.map((o) => o.plan_slug))).sort(), [orders]);
@@ -61,7 +62,8 @@ function OrdersPage() {
       if (deliv !== "all" && o.delivery_state !== deliv) return false;
       if (plan !== "all" && o.plan_slug !== plan) return false;
       if (q) {
-        const hay = `${o.order_code} ${o.customer_name} ${o.mobile} ${o.whatsapp_number ?? ""}`.toLowerCase();
+        const hay =
+          `${o.order_code} ${o.customer_name} ${o.mobile} ${o.whatsapp_number ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -90,7 +92,21 @@ function OrdersPage() {
   function exportCSV() {
     downloadCSV(
       `orders-${date || "all"}.csv`,
-      ["Order", "Time", "Customer", "Mobile", "Sector", "Meal", "Plan", "Qty", "Amount", "Payment mode", "Payment", "Delivery", "Late"],
+      [
+        "Order",
+        "Time",
+        "Customer",
+        "Mobile",
+        "Sector",
+        "Meal",
+        "Plan",
+        "Qty",
+        "Amount",
+        "Payment mode",
+        "Payment",
+        "Delivery",
+        "Late",
+      ],
       filtered.map((o) => [
         o.order_code,
         new Date(o.created_at).toLocaleString("en-IN"),
@@ -152,11 +168,31 @@ function OrdersPage() {
               className="rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
-          <FilterSelect label="Meal" value={meal} onChange={setMeal} options={["all", "lunch", "dinner"]} />
-          <FilterSelect label="Sector" value={sector} onChange={setSector} options={["all", ...sectors]} />
+          <FilterSelect
+            label="Meal"
+            value={meal}
+            onChange={setMeal}
+            options={["all", "lunch", "dinner"]}
+          />
+          <FilterSelect
+            label="Sector"
+            value={sector}
+            onChange={setSector}
+            options={["all", ...sectors]}
+          />
           <FilterSelect label="Plan" value={plan} onChange={setPlan} options={["all", ...plans]} />
-          <FilterSelect label="Payment" value={pay} onChange={setPay} options={["all", ...PAYMENT_STATUSES.map((p) => p.value)]} />
-          <FilterSelect label="Delivery" value={deliv} onChange={setDeliv} options={["all", ...DELIVERY_STATUSES.map((d) => d.value)]} />
+          <FilterSelect
+            label="Payment"
+            value={pay}
+            onChange={setPay}
+            options={["all", ...PAYMENT_STATUSES.map((p) => p.value)]}
+          />
+          <FilterSelect
+            label="Delivery"
+            value={deliv}
+            onChange={setDeliv}
+            options={["all", ...DELIVERY_STATUSES.map((d) => d.value)]}
+          />
           <Button variant="ghost" size="sm" className="ml-auto" onClick={resetFilters}>
             <Filter className="h-4 w-4" /> Reset
           </Button>
@@ -200,16 +236,27 @@ function OrdersPage() {
               </thead>
               <tbody>
                 {filtered.map((o) => (
-                  <tr key={o.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-secondary/20">
+                  <tr
+                    key={o.id}
+                    className="border-b border-border/60 transition-colors last:border-0 hover:bg-secondary/20"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-semibold text-foreground">{o.order_code}</span>
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {o.order_code}
+                        </span>
                         {o.is_late_request && (
-                          <span className="rounded-full bg-mustard/25 px-1.5 py-0.5 text-[9px] font-bold uppercase text-foreground">Late</span>
+                          <span className="rounded-full bg-mustard/25 px-1.5 py-0.5 text-[9px] font-bold uppercase text-foreground">
+                            Late
+                          </span>
                         )}
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        {new Date(o.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} · {o.delivery_date}
+                        {new Date(o.created_at).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        · {o.delivery_date}
                       </p>
                     </td>
                     <td className="px-3 py-3">
@@ -218,7 +265,9 @@ function OrdersPage() {
                     </td>
                     <td className="px-3 py-3 text-muted-foreground">{o.sector}</td>
                     <td className="px-3 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${o.meal === "lunch" ? "bg-mustard/25 text-foreground" : "bg-terracotta/20 text-foreground"}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${o.meal === "lunch" ? "bg-mustard/25 text-foreground" : "bg-terracotta/20 text-foreground"}`}
+                      >
                         {o.meal}
                       </span>
                     </td>
@@ -231,7 +280,9 @@ function OrdersPage() {
                         className="rounded-md border border-input bg-background px-2 py-1 text-xs capitalize"
                       >
                         {PAYMENT_STATUSES.map((p) => (
-                          <option key={p.value} value={p.value}>{p.label}</option>
+                          <option key={p.value} value={p.value}>
+                            {p.label}
+                          </option>
                         ))}
                       </select>
                     </td>
@@ -242,17 +293,28 @@ function OrdersPage() {
                         className="rounded-md border border-input bg-background px-2 py-1 text-xs capitalize"
                       >
                         {DELIVERY_STATUSES.map((d) => (
-                          <option key={d.value} value={d.value}>{d.label}</option>
+                          <option key={d.value} value={d.value}>
+                            {d.label}
+                          </option>
                         ))}
                       </select>
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-1">
-                        <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => openOrder(o)} title="View">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2"
+                          onClick={() => openOrder(o)}
+                          title="View"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <a
-                          href={buildWhatsAppTo(o.whatsapp_number || o.mobile, `Hi ${o.customer_name}, regarding order ${o.order_code}...`)}
+                          href={buildWhatsAppTo(
+                            o.whatsapp_number || o.mobile,
+                            `Hi ${o.customer_name}, regarding order ${o.order_code}...`,
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-secondary"
@@ -279,7 +341,12 @@ function OrdersPage() {
         )}
       </div>
 
-      <OrderDrawer order={selected} open={drawerOpen} onOpenChange={setDrawerOpen} onPatch={patchOrder} />
+      <OrderDrawer
+        order={selected}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onPatch={patchOrder}
+      />
     </div>
   );
 }

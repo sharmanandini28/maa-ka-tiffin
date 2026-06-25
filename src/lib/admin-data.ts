@@ -76,11 +76,12 @@ export const adminZonesQueryOptions = queryOptions({
 });
 
 // Per-plan portion footprint used for the kitchen quantity summary.
-export const PLAN_QTY: Record<string, { roti: number; rice: number; dal: number; sabzi: number }> = {
-  basic: { roti: 4, rice: 1, dal: 1, sabzi: 1 },
-  standard: { roti: 5, rice: 1, dal: 1, sabzi: 2 },
-  premium: { roti: 6, rice: 1, dal: 1, sabzi: 2 },
-};
+export const PLAN_QTY: Record<string, { roti: number; rice: number; dal: number; sabzi: number }> =
+  {
+    basic: { roti: 4, rice: 1, dal: 1, sabzi: 1 },
+    standard: { roti: 5, rice: 1, dal: 1, sabzi: 2 },
+    premium: { roti: 6, rice: 1, dal: 1, sabzi: 2 },
+  };
 
 export function computeKitchen(orders: AdminOrder[], bufferPct = 0) {
   let roti = 0,

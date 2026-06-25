@@ -32,10 +32,26 @@ export const Route = createFileRoute("/about")({
 });
 
 const VALUES = [
-  { icon: ShieldCheck, title: "Purity First", body: "No palm oil, no milawat, no shortcuts — ever. What we won't feed our own family, we won't serve you." },
-  { icon: Sprout, title: "Honest Sourcing", body: "Maximum raw material from our own farm and trusted local farmers, chosen for quality." },
-  { icon: HandHeart, title: "Genuine Care", body: "We cook for people living away from home — every tiffin carries a little bit of maa's care." },
-  { icon: Home, title: "Real Home Taste", body: "Light, balanced, home-style meals — not heavy restaurant food drowning in masala." },
+  {
+    icon: ShieldCheck,
+    title: "Purity First",
+    body: "No palm oil, no milawat, no shortcuts — ever. What we won't feed our own family, we won't serve you.",
+  },
+  {
+    icon: Sprout,
+    title: "Honest Sourcing",
+    body: "Maximum raw material from our own farm and trusted local farmers, chosen for quality.",
+  },
+  {
+    icon: HandHeart,
+    title: "Genuine Care",
+    body: "We cook for people living away from home — every tiffin carries a little bit of maa's care.",
+  },
+  {
+    icon: Home,
+    title: "Real Home Taste",
+    body: "Light, balanced, home-style meals — not heavy restaurant food drowning in masala.",
+  },
 ];
 
 function AboutPage() {
@@ -43,7 +59,11 @@ function AboutPage() {
     <SiteLayout>
       <PageHero
         eyebrow="Our Story"
-        title={<>Khana banaya gaya hai <span className="text-primary">maa jaise pyaar</span> se</>}
+        title={
+          <>
+            Khana banaya gaya hai <span className="text-primary">maa jaise pyaar</span> se
+          </>
+        }
         subtitle="Maa Jaisa Tiffin isn't just a food service. It's a promise of purity, hygiene and the comfort of home-cooked meals for everyone in Noida living away from family."
       />
 
@@ -96,9 +116,9 @@ function AboutPage() {
                 What "Maa Jaisa" means
               </h3>
               <p className="mt-2 leading-relaxed text-muted-foreground">
-                "Maa Jaisa" means "like mother's". It's the standard we hold every meal to — the same
-                purity, care and balance your mother would insist on. Simple, fresh, and made with
-                love.
+                "Maa Jaisa" means "like mother's". It's the standard we hold every meal to — the
+                same purity, care and balance your mother would insist on. Simple, fresh, and made
+                with love.
               </p>
             </div>
           </Reveal>
@@ -143,7 +163,12 @@ function AboutPage() {
 
       {/* Stats over farm image */}
       <section className="relative overflow-hidden py-20">
-        <img src={farmField} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={farmField}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-primary/85" />
         <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:px-6 lg:grid-cols-4">
           {STATS.map((s, i) => (

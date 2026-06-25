@@ -80,7 +80,11 @@ function ZonesPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {zones.map((z) => (
-            <ZoneCard key={z.id} zone={z} onChanged={() => qc.invalidateQueries({ queryKey: ["admin-zones"] })} />
+            <ZoneCard
+              key={z.id}
+              zone={z}
+              onChanged={() => qc.invalidateQueries({ queryKey: ["admin-zones"] })}
+            />
           ))}
         </div>
       )}
@@ -135,14 +139,19 @@ function ZoneCard({ zone, onChanged }: { zone: AdminZone; onChanged: () => void 
   }
 
   return (
-    <div className={`rounded-2xl border bg-card p-5 ${draft.active ? "border-border" : "border-dashed border-border opacity-80"}`}>
+    <div
+      className={`rounded-2xl border bg-card p-5 ${draft.active ? "border-border" : "border-dashed border-border opacity-80"}`}
+    >
       <div className="flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-foreground">
           <MapPin className="h-4 w-4 text-primary" /> {zone.sector}
         </h3>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
           {draft.active ? "Active" : "Inactive"}
-          <Switch checked={draft.active} onCheckedChange={(v) => setDraft({ ...draft, active: v })} />
+          <Switch
+            checked={draft.active}
+            onCheckedChange={(v) => setDraft({ ...draft, active: v })}
+          />
         </label>
       </div>
 
@@ -153,7 +162,9 @@ function ZoneCard({ zone, onChanged }: { zone: AdminZone; onChanged: () => void 
             type="number"
             min={0}
             value={draft.delivery_fee}
-            onChange={(e) => setDraft({ ...draft, delivery_fee: Math.max(0, Number(e.target.value)) })}
+            onChange={(e) =>
+              setDraft({ ...draft, delivery_fee: Math.max(0, Number(e.target.value)) })
+            }
           />
         </div>
         <div className="grid gap-1.5">
@@ -181,11 +192,17 @@ function ZoneCard({ zone, onChanged }: { zone: AdminZone; onChanged: () => void 
         <div className="flex flex-col justify-end gap-2 pb-1 text-sm">
           <label className="flex items-center justify-between">
             <span className="text-muted-foreground">COD allowed</span>
-            <Switch checked={draft.cod_allowed} onCheckedChange={(v) => setDraft({ ...draft, cod_allowed: v })} />
+            <Switch
+              checked={draft.cod_allowed}
+              onCheckedChange={(v) => setDraft({ ...draft, cod_allowed: v })}
+            />
           </label>
           <label className="flex items-center justify-between">
             <span className="text-muted-foreground">Subscription only</span>
-            <Switch checked={draft.subscription_only} onCheckedChange={(v) => setDraft({ ...draft, subscription_only: v })} />
+            <Switch
+              checked={draft.subscription_only}
+              onCheckedChange={(v) => setDraft({ ...draft, subscription_only: v })}
+            />
           </label>
         </div>
       </div>

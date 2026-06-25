@@ -49,10 +49,18 @@ function Dashboard() {
 
   const stats = useMemo(() => {
     const active = (o: AdminOrder) => o.delivery_state !== "cancelled";
-    const todayLunch = orders.filter((o) => o.delivery_date === today && o.meal === "lunch" && active(o));
-    const todayDinner = orders.filter((o) => o.delivery_date === today && o.meal === "dinner" && active(o));
-    const tomLunch = orders.filter((o) => o.delivery_date === tomorrow && o.meal === "lunch" && active(o));
-    const dinnerOpen = todayDinner.filter((o) => o.delivery_state === "received" || o.delivery_state === "confirmed");
+    const todayLunch = orders.filter(
+      (o) => o.delivery_date === today && o.meal === "lunch" && active(o),
+    );
+    const todayDinner = orders.filter(
+      (o) => o.delivery_date === today && o.meal === "dinner" && active(o),
+    );
+    const tomLunch = orders.filter(
+      (o) => o.delivery_date === tomorrow && o.meal === "lunch" && active(o),
+    );
+    const dinnerOpen = todayDinner.filter(
+      (o) => o.delivery_state === "received" || o.delivery_state === "confirmed",
+    );
     const pending = orders.filter((o) => o.payment_status === "pending");
     const late = orders.filter((o) => o.is_late_request && o.delivery_state === "received");
     return {
@@ -103,7 +111,11 @@ function Dashboard() {
         qty,
       ]),
     ];
-    downloadCSV(`kitchen-${date}-${mealFilter}.csv`, ["Item", "Confirmed", `After ${buffer}% buffer`], rows);
+    downloadCSV(
+      `kitchen-${date}-${mealFilter}.csv`,
+      ["Item", "Confirmed", `After ${buffer}% buffer`],
+      rows,
+    );
   }
 
   function exportDelivery() {
@@ -114,7 +126,11 @@ function Dashboard() {
       g.lunch + g.dinner,
       buildRouteLink(g.orders),
     ]);
-    downloadCSV(`delivery-${date}-${mealFilter}.csv`, ["Sector", "Lunch", "Dinner", "Total", "Route link"], rows);
+    downloadCSV(
+      `delivery-${date}-${mealFilter}.csv`,
+      ["Sector", "Lunch", "Dinner", "Total", "Route link"],
+      rows,
+    );
   }
 
   return (
@@ -141,18 +157,56 @@ function Dashboard() {
         <>
           {/* Overview cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <StatCard icon={ShoppingBag} color="bg-mustard text-mustard-foreground" label="Today Lunch" value={stats.todayLunch} hint="tiffins" />
-            <StatCard icon={Soup} color="bg-terracotta text-terracotta-foreground" label="Today Dinner" value={stats.todayDinner} hint="tiffins" />
-            <StatCard icon={Lock} color="bg-primary text-primary-foreground" label="Tomorrow Lunch (locked)" value={stats.tomLunch} hint="tiffins" />
-            <StatCard icon={CalendarDays} color="bg-secondary text-secondary-foreground" label="Today Dinner — Open" value={stats.dinnerOpen} hint="to confirm" />
-            <StatCard icon={IndianRupee} color="bg-terracotta text-terracotta-foreground" label="Pending Payments" value={formatINR(stats.pendingAmount)} hint={`${stats.pendingCount} orders`} to="/admin/payments" />
-            <StatCard icon={Clock} color="bg-mustard text-mustard-foreground" label="Late Order Requests" value={stats.lateCount} hint="need approval" to="/admin/payments" />
+            <StatCard
+              icon={ShoppingBag}
+              color="bg-mustard text-mustard-foreground"
+              label="Today Lunch"
+              value={stats.todayLunch}
+              hint="tiffins"
+            />
+            <StatCard
+              icon={Soup}
+              color="bg-terracotta text-terracotta-foreground"
+              label="Today Dinner"
+              value={stats.todayDinner}
+              hint="tiffins"
+            />
+            <StatCard
+              icon={Lock}
+              color="bg-primary text-primary-foreground"
+              label="Tomorrow Lunch (locked)"
+              value={stats.tomLunch}
+              hint="tiffins"
+            />
+            <StatCard
+              icon={CalendarDays}
+              color="bg-secondary text-secondary-foreground"
+              label="Today Dinner — Open"
+              value={stats.dinnerOpen}
+              hint="to confirm"
+            />
+            <StatCard
+              icon={IndianRupee}
+              color="bg-terracotta text-terracotta-foreground"
+              label="Pending Payments"
+              value={formatINR(stats.pendingAmount)}
+              hint={`${stats.pendingCount} orders`}
+              to="/admin/payments"
+            />
+            <StatCard
+              icon={Clock}
+              color="bg-mustard text-mustard-foreground"
+              label="Late Order Requests"
+              value={stats.lateCount}
+              hint="need approval"
+              to="/admin/payments"
+            />
           </div>
 
           <div className="rounded-2xl border border-dashed border-border bg-secondary/20 p-4 text-xs text-muted-foreground">
             <Sparkles className="mr-1.5 inline h-3.5 w-3.5 text-primary" />
-            Active subscriptions, paused meals and rating alerts arrive with the Phase 2 subscription
-            wallet.
+            Active subscriptions, paused meals and rating alerts arrive with the Phase 2
+            subscription wallet.
           </div>
 
           {/* Filters for operational views */}
@@ -202,7 +256,9 @@ function Dashboard() {
                         key={b}
                         onClick={() => setBuffer(b)}
                         className={`rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
-                          buffer === b ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                          buffer === b
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {b}%
@@ -212,25 +268,61 @@ function Dashboard() {
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <KitchenStat label="Roti" raw={kitchen.raw.roti} final={kitchen.final.roti} unit="pcs" />
-                <KitchenStat label="Rice" raw={kitchen.raw.rice} final={kitchen.final.rice} unit="portions" />
-                <KitchenStat label="Dal" raw={kitchen.raw.dal} final={kitchen.final.dal} unit="portions" />
-                <KitchenStat label="Sabzi" raw={kitchen.raw.sabzi} final={kitchen.final.sabzi} unit="portions" />
-                <KitchenStat label="Packaging" raw={kitchen.raw.sets} final={kitchen.final.sets} unit="sets" />
+                <KitchenStat
+                  label="Roti"
+                  raw={kitchen.raw.roti}
+                  final={kitchen.final.roti}
+                  unit="pcs"
+                />
+                <KitchenStat
+                  label="Rice"
+                  raw={kitchen.raw.rice}
+                  final={kitchen.final.rice}
+                  unit="portions"
+                />
+                <KitchenStat
+                  label="Dal"
+                  raw={kitchen.raw.dal}
+                  final={kitchen.final.dal}
+                  unit="portions"
+                />
+                <KitchenStat
+                  label="Sabzi"
+                  raw={kitchen.raw.sabzi}
+                  final={kitchen.final.sabzi}
+                  unit="portions"
+                />
+                <KitchenStat
+                  label="Packaging"
+                  raw={kitchen.raw.sets}
+                  final={kitchen.final.sets}
+                  unit="sets"
+                />
               </div>
               {kitchen.addOns.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Add-ons</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Add-ons
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {kitchen.addOns.map(([id, qty]) => (
-                      <span key={id} className="rounded-full bg-secondary/50 px-2.5 py-1 text-xs text-foreground">
+                      <span
+                        key={id}
+                        className="rounded-full bg-secondary/50 px-2.5 py-1 text-xs text-foreground"
+                      >
                         {ADD_ONS.find((a) => a.id === id)?.label ?? id}: <strong>{qty}</strong>
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              <Button variant="outline" size="sm" className="mt-4" onClick={exportKitchen} disabled={filtered.length === 0}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={exportKitchen}
+                disabled={filtered.length === 0}
+              >
                 <Download className="h-4 w-4" /> Export kitchen sheet
               </Button>
             </div>
@@ -254,7 +346,9 @@ function Dashboard() {
                   <tbody>
                     {sectorGroups.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-6 text-center text-muted-foreground">No orders</td>
+                        <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                          No orders
+                        </td>
                       </tr>
                     ) : (
                       sectorGroups.map(([sector, g]) => {
@@ -264,10 +358,17 @@ function Dashboard() {
                             <td className="py-2 pr-3 font-medium text-foreground">{sector}</td>
                             <td className="py-2 px-3 text-muted-foreground">{g.lunch}</td>
                             <td className="py-2 px-3 text-muted-foreground">{g.dinner}</td>
-                            <td className="py-2 px-3 font-semibold text-foreground">{g.lunch + g.dinner}</td>
+                            <td className="py-2 px-3 font-semibold text-foreground">
+                              {g.lunch + g.dinner}
+                            </td>
                             <td className="py-2 pl-3">
                               {route ? (
-                                <a href={route} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary">
+                                <a
+                                  href={route}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-primary"
+                                >
                                   <RouteIcon className="h-4 w-4" />
                                 </a>
                               ) : (
@@ -281,7 +382,13 @@ function Dashboard() {
                   </tbody>
                 </table>
               </div>
-              <Button variant="outline" size="sm" className="mt-4" onClick={exportDelivery} disabled={sectorGroups.length === 0}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={exportDelivery}
+                disabled={sectorGroups.length === 0}
+              >
                 <Download className="h-4 w-4" /> Export delivery sheet
               </Button>
             </div>
@@ -323,7 +430,17 @@ function StatCard({
   return inner;
 }
 
-function KitchenStat({ label, raw, final, unit }: { label: string; raw: number; final: number; unit: string }) {
+function KitchenStat({
+  label,
+  raw,
+  final,
+  unit,
+}: {
+  label: string;
+  raw: number;
+  final: number;
+  unit: string;
+}) {
   return (
     <div className="rounded-xl bg-secondary/40 p-3 text-center">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
