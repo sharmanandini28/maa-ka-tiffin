@@ -3,17 +3,23 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader2, Search, Eye, MessageCircle, MapPin, Filter } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import {
   adminOrdersQueryOptions,
   adminZonesQueryOptions,
   mapsSearchLink,
+  updateOrderWithAudit,
   type AdminOrder,
+  type OrderAdminPatch,
 } from "@/lib/admin-data";
 import { toDateKey } from "@/lib/cutoff";
 import { formatINR, buildWhatsAppTo } from "@/lib/brand";
 import { downloadCSV } from "@/lib/csv";
-import { PAYMENT_STATUSES, DELIVERY_STATUSES } from "@/lib/status";
+import {
+  PAYMENT_STATUSES,
+  DELIVERY_STATUSES,
+  type DeliveryStatus,
+  type PaymentStatus,
+} from "@/lib/status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -70,18 +76,19 @@ function OrdersPage() {
     });
   }, [orders, date, meal, sector, pay, deliv, plan, search]);
 
-  async function patchOrder(id: string, p: Record<string, unknown>) {
-    const { error } = await supabase
-      .from("orders")
-      .update(p as never)
-      .eq("id", id);
-    if (error) {
-      toast.error("Update failed: " + error.message);
-      return;
+  async function patchOrder(order: AdminOrder, p: OrderAdminPatch, note?: string | null) {
+    try {
+      const { auditError } = await updateOrderWithAudit(order, p, { note });
+      toast.success("Order updated");
+      if (auditError) toast.warning("Updated, but audit log failed: " + auditError.message);
+      await qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      await qc.invalidateQueries({ queryKey: ["admin-action-logs"] });
+      setSelected((prev) =>
+        prev && prev.id === order.id ? ({ ...prev, ...p } as AdminOrder) : prev,
+      );
+    } catch (error) {
+      toast.error("Update failed: " + (error instanceof Error ? error.message : String(error)));
     }
-    toast.success("Order updated");
-    await qc.invalidateQueries({ queryKey: ["admin-orders"] });
-    setSelected((prev) => (prev && prev.id === id ? ({ ...prev, ...p } as AdminOrder) : prev));
   }
 
   function openOrder(o: AdminOrder) {
@@ -276,7 +283,9 @@ function OrdersPage() {
                     <td className="px-3 py-3">
                       <select
                         value={o.payment_status}
-                        onChange={(e) => patchOrder(o.id, { payment_status: e.target.value })}
+                        onChange={(e) =>
+                          patchOrder(o, { payment_status: e.target.value as PaymentStatus })
+                        }
                         className="rounded-md border border-input bg-background px-2 py-1 text-xs capitalize"
                       >
                         {PAYMENT_STATUSES.map((p) => (
@@ -289,7 +298,9 @@ function OrdersPage() {
                     <td className="px-3 py-3">
                       <select
                         value={o.delivery_state}
-                        onChange={(e) => patchOrder(o.id, { delivery_state: e.target.value })}
+                        onChange={(e) =>
+                          patchOrder(o, { delivery_state: e.target.value as DeliveryStatus })
+                        }
                         className="rounded-md border border-input bg-background px-2 py-1 text-xs capitalize"
                       >
                         {DELIVERY_STATUSES.map((d) => (

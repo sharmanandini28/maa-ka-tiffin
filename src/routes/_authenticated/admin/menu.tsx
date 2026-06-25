@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/admin-data";
 import { toDateKey } from "@/lib/cutoff";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,20 +104,45 @@ function MealEditor({
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("menu_items").upsert(
-      {
-        menu_date: date,
-        meal,
-        weekday: new Date(date).getDay(),
-        dishes: dishes.trim(),
-        descriptor: descriptor.trim() || null,
-      },
-      { onConflict: "menu_date,meal" },
-    );
+    const newValue = {
+      dishes: dishes.trim(),
+      descriptor: descriptor.trim() || null,
+    };
+    const { data, error } = await supabase
+      .from("menu_items")
+      .upsert(
+        {
+          menu_date: date,
+          meal,
+          weekday: new Date(date).getDay(),
+          ...newValue,
+        },
+        { onConflict: "menu_date,meal" },
+      )
+      .select("id")
+      .single();
     setSaving(false);
     if (error) {
       toast.error("Save failed: " + error.message);
       return;
+    }
+    try {
+      await logAdminAction({
+        action_type: "menu_updated",
+        entity_type: "menu_item",
+        entity_id: data?.id ?? null,
+        old_value: {
+          dishes: initial.dishes,
+          descriptor: initial.descriptor || null,
+        },
+        new_value: newValue,
+        note: `${date} ${meal}`,
+      });
+    } catch (auditError) {
+      toast.warning(
+        "Menu saved, but audit log failed: " +
+          (auditError instanceof Error ? auditError.message : String(auditError)),
+      );
     }
     toast.success(`${meal} menu saved`);
     onSaved();

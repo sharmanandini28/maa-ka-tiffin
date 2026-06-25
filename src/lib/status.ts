@@ -18,7 +18,7 @@ export const PAYMENT_STATUSES: { value: PaymentStatus; label: string; chip: stri
   { value: "partial", label: "Partial", chip: "bg-terracotta/20 text-foreground" },
   { value: "cod", label: "COD", chip: "bg-secondary text-secondary-foreground" },
   { value: "refunded", label: "Refunded", chip: "bg-muted text-muted-foreground" },
-  { value: "failed", label: "Failed", chip: "bg-destructive/15 text-destructive" },
+  { value: "failed", label: "Rejected / failed", chip: "bg-destructive/15 text-destructive" },
 ];
 
 // Ordered operational flow (used for the status timeline)

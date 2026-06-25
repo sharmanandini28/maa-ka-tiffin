@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Phone,
   MessageCircle,
@@ -22,7 +23,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { PaymentBadge, DeliveryBadge } from "./StatusBadge";
 import { DELIVERY_FLOW, DELIVERY_NEXT } from "@/lib/status";
 import { formatINR, buildWhatsAppTo, ADD_ONS } from "@/lib/brand";
-import { mapsSearchLink, type AdminOrder } from "@/lib/admin-data";
+import {
+  adminAuditLogsByOrderQueryOptions,
+  mapsSearchLink,
+  type AdminActionLog,
+  type AdminOrder,
+  type OrderAdminPatch,
+} from "@/lib/admin-data";
 
 export function OrderDrawer({
   order,
@@ -33,11 +40,15 @@ export function OrderDrawer({
   order: AdminOrder | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onPatch: (id: string, patch: Record<string, unknown>) => Promise<void>;
+  onPatch: (order: AdminOrder, patch: OrderAdminPatch, note?: string | null) => Promise<void>;
 }) {
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
   const [busy, setBusy] = useState(false);
+  const auditQuery = useQuery({
+    ...adminAuditLogsByOrderQueryOptions(order?.id ?? "none"),
+    enabled: Boolean(order?.id),
+  });
 
   useEffect(() => {
     setNotes(order?.admin_notes ?? "");
@@ -52,10 +63,10 @@ export function OrderDrawer({
   const nextStep = DELIVERY_NEXT[order.delivery_state];
   const currentIdx = DELIVERY_FLOW.indexOf(order.delivery_state as never);
 
-  async function patch(p: Record<string, unknown>) {
+  async function patch(p: OrderAdminPatch, note?: string | null) {
     setBusy(true);
     try {
-      await onPatch(order!.id, p);
+      await onPatch(order!, p, note);
     } finally {
       setBusy(false);
     }
@@ -137,7 +148,11 @@ export function OrderDrawer({
                 size="sm"
                 variant="secondary"
                 disabled={busy}
-                onClick={() => patch({ payment_status: "paid" })}
+                onClick={() => {
+                  if (window.confirm(`Mark ${order.order_code} as paid?`)) {
+                    void patch({ payment_status: "paid" });
+                  }
+                }}
               >
                 <Wallet className="h-4 w-4" /> Mark paid
               </Button>
@@ -160,7 +175,11 @@ export function OrderDrawer({
                 variant="outline"
                 className="text-destructive"
                 disabled={busy}
-                onClick={() => patch({ delivery_state: "cancelled" })}
+                onClick={() => {
+                  if (window.confirm(`Cancel ${order.order_code}?`)) {
+                    void patch({ delivery_state: "cancelled" });
+                  }
+                }}
               >
                 <XCircle className="h-4 w-4" /> Cancel
               </Button>
@@ -232,7 +251,7 @@ export function OrderDrawer({
               disabled={savingNotes}
               onClick={async () => {
                 setSavingNotes(true);
-                await onPatch(order.id, { admin_notes: notes.trim() || null });
+                await onPatch(order, { admin_notes: notes.trim() || null }, notes.trim() || null);
                 setSavingNotes(false);
               }}
             >
@@ -244,10 +263,85 @@ export function OrderDrawer({
               Save notes
             </Button>
           </Section>
+
+          {/* Audit history */}
+          <Section title="Audit history">
+            {auditQuery.isLoading ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading activity...
+              </div>
+            ) : auditQuery.data && auditQuery.data.length > 0 ? (
+              <div className="space-y-3">
+                {auditQuery.data.map((log) => (
+                  <AuditLogRow key={log.id} log={log} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No admin activity logged yet.</p>
+            )}
+          </Section>
         </div>
       </SheetContent>
     </Sheet>
   );
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  payment_verified: "Payment verified",
+  payment_rejected: "Payment rejected",
+  payment_marked_cod: "Marked as COD",
+  delivery_status_changed: "Delivery status changed",
+  payment_status_changed: "Payment status changed",
+  order_cancelled: "Order cancelled",
+  late_order_approved: "Late order approved",
+  late_order_rejected: "Late order rejected",
+  order_note_updated: "Admin note updated",
+  zone_updated: "Zone updated",
+  menu_updated: "Menu updated",
+};
+
+function AuditLogRow({ log }: { log: AdminActionLog }) {
+  return (
+    <div className="border-l-2 border-primary/30 pl-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-foreground">
+          {ACTION_LABELS[log.action_type] ?? log.action_type.replace(/_/g, " ")}
+        </p>
+        <time className="shrink-0 text-[11px] text-muted-foreground">
+          {new Date(log.created_at).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </time>
+      </div>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        Admin: {log.admin_user_id ? log.admin_user_id.slice(0, 8) : "unknown"}
+      </p>
+      {formatAuditChange(log) && (
+        <p className="mt-1 font-mono text-[11px] text-muted-foreground">{formatAuditChange(log)}</p>
+      )}
+      {log.note && <p className="mt-1 text-xs text-foreground">{log.note}</p>}
+    </div>
+  );
+}
+
+function formatAuditChange(log: AdminActionLog): string {
+  if (!log.old_value || !log.new_value) return "";
+  if (
+    typeof log.old_value !== "object" ||
+    typeof log.new_value !== "object" ||
+    Array.isArray(log.old_value) ||
+    Array.isArray(log.new_value)
+  ) {
+    return "";
+  }
+  const oldValue = log.old_value as Record<string, unknown>;
+  const newValue = log.new_value as Record<string, unknown>;
+  return Object.keys(newValue)
+    .map((key) => `${key}: ${String(oldValue[key] ?? "—")} → ${String(newValue[key] ?? "—")}`)
+    .join(" · ");
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
