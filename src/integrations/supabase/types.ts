@@ -130,6 +130,56 @@ export type Database = {
         };
         Relationships: [];
       };
+      payment_settings: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          payee_name: string;
+          payment_instructions: string | null;
+          screenshot_instructions: string | null;
+          transaction_id_required: boolean;
+          updated_at: string;
+          updated_by: string | null;
+          upi_enabled: boolean;
+          upi_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          payee_name: string;
+          payment_instructions?: string | null;
+          screenshot_instructions?: string | null;
+          transaction_id_required?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+          upi_enabled?: boolean;
+          upi_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          payee_name?: string;
+          payment_instructions?: string | null;
+          screenshot_instructions?: string | null;
+          transaction_id_required?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+          upi_enabled?: boolean;
+          upi_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       orders: {
         Row: {
           add_ons: Json;

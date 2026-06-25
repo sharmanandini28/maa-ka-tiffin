@@ -1,6 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import {
+  PAYMENT_SETTINGS_UNAVAILABLE_MESSAGE,
+  fallbackPaymentSettings,
+  isPaymentSettingsUnavailableError,
+  type PaymentSettingsDTO,
+} from "@/lib/public.functions";
 import type { DeliveryStatus, PaymentStatus } from "./status";
 
 // Full order shape read by the admin operations console (RLS: admin-only).
@@ -62,13 +68,35 @@ export type AdminActionType =
   | "late_order_rejected"
   | "order_note_updated"
   | "zone_updated"
-  | "menu_updated";
+  | "menu_updated"
+  | "payment_settings_updated";
 
 export type AdminActionLog = Tables<"admin_action_logs">;
+export type AdminAuditLogQueryResult = {
+  logs: AdminActionLog[];
+  unavailable: boolean;
+};
 export type OrderAdminPatch = Pick<
   TablesUpdate<"orders">,
   "payment_status" | "payment_mode" | "delivery_state" | "admin_notes" | "is_late_request"
 >;
+
+export const AUDIT_LOG_UNAVAILABLE_MESSAGE =
+  "Audit history is unavailable. Apply the audit-log migration to enable this section.";
+
+export function isAuditLogUnavailableError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const maybe = error as { code?: string; message?: string; details?: string };
+  const text = `${maybe.message ?? ""} ${maybe.details ?? ""}`.toLowerCase();
+  return (
+    maybe.code === "42P01" ||
+    maybe.code === "PGRST205" ||
+    (text.includes("admin_action_logs") &&
+      (text.includes("does not exist") ||
+        text.includes("could not find") ||
+        text.includes("schema cache")))
+  );
+}
 
 export const adminAuditLogsByOrderQueryOptions = (orderId: string) =>
   queryOptions({
@@ -81,8 +109,17 @@ export const adminAuditLogsByOrderQueryOptions = (orderId: string) =>
         )
         .eq("order_id", orderId)
         .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as AdminActionLog[];
+      if (error) {
+        if (isAuditLogUnavailableError(error)) {
+          console.warn(AUDIT_LOG_UNAVAILABLE_MESSAGE, error.message);
+          return { logs: [], unavailable: true } satisfies AdminAuditLogQueryResult;
+        }
+        throw error;
+      }
+      return {
+        logs: (data ?? []) as AdminActionLog[],
+        unavailable: false,
+      } satisfies AdminAuditLogQueryResult;
     },
     staleTime: 15_000,
   });
@@ -167,7 +204,13 @@ export async function logAdminAction(input: Omit<AdminActionLogInsert, "admin_us
     ...input,
   });
 
-  if (error) throw error;
+  if (error) {
+    if (isAuditLogUnavailableError(error)) {
+      console.warn(AUDIT_LOG_UNAVAILABLE_MESSAGE, error.message);
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function updateOrderWithAudit(
@@ -219,6 +262,108 @@ export const adminZonesQueryOptions = queryOptions({
   },
   staleTime: 60_000,
 });
+
+export type PaymentSettingsPatch = {
+  upi_id: string;
+  payee_name: string;
+  payment_instructions: string | null;
+  screenshot_instructions: string | null;
+  transaction_id_required: boolean;
+  upi_enabled: boolean;
+  is_active: boolean;
+};
+
+export const adminPaymentSettingsQueryOptions = queryOptions({
+  queryKey: ["admin-payment-settings"],
+  queryFn: async (): Promise<PaymentSettingsDTO> => {
+    const { data, error } = await supabase
+      .from("payment_settings")
+      .select(
+        "id, upi_id, payee_name, payment_instructions, screenshot_instructions, transaction_id_required, upi_enabled, is_active",
+      )
+      .eq("is_active", true)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      if (isPaymentSettingsUnavailableError(error)) {
+        console.warn(PAYMENT_SETTINGS_UNAVAILABLE_MESSAGE, error.message);
+        return fallbackPaymentSettings(true);
+      }
+      throw error;
+    }
+
+    if (!data) return fallbackPaymentSettings(false);
+
+    return {
+      id: data.id,
+      upi_id: data.upi_id,
+      payee_name: data.payee_name,
+      payment_instructions: data.payment_instructions ?? "",
+      screenshot_instructions: data.screenshot_instructions ?? "",
+      transaction_id_required: Boolean(data.transaction_id_required),
+      upi_enabled: data.upi_enabled ?? true,
+      is_active: data.is_active ?? true,
+      unavailable: false,
+      using_placeholder: data.upi_id === "your-upi-id@bank",
+    };
+  },
+  staleTime: 60_000,
+});
+
+export async function updatePaymentSettings(
+  current: PaymentSettingsDTO,
+  patch: PaymentSettingsPatch,
+) {
+  if (current.unavailable) {
+    throw new Error(PAYMENT_SETTINGS_UNAVAILABLE_MESSAGE);
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const payload = {
+    ...patch,
+    updated_by: user?.id ?? null,
+  };
+
+  const query = current.id
+    ? supabase.from("payment_settings").update(payload).eq("id", current.id)
+    : supabase.from("payment_settings").insert(payload);
+
+  const { data, error } = await query
+    .select(
+      "id, upi_id, payee_name, payment_instructions, screenshot_instructions, transaction_id_required, upi_enabled, is_active",
+    )
+    .single();
+  if (error) throw error;
+
+  try {
+    await logAdminAction({
+      action_type: "payment_settings_updated",
+      entity_type: "payment_settings",
+      entity_id: data.id,
+      old_value: current.id
+        ? {
+            upi_id: current.upi_id,
+            payee_name: current.payee_name,
+            payment_instructions: current.payment_instructions,
+            screenshot_instructions: current.screenshot_instructions,
+            transaction_id_required: current.transaction_id_required,
+            upi_enabled: current.upi_enabled,
+            is_active: current.is_active,
+          }
+        : null,
+      new_value: patch as unknown as Json,
+      note: "Admin-managed UPI settings updated",
+    });
+    return { auditError: null };
+  } catch (auditError) {
+    return { auditError: auditError instanceof Error ? auditError : new Error(String(auditError)) };
+  }
+}
 
 // Per-plan portion footprint used for the kitchen quantity summary.
 export const PLAN_QTY: Record<string, { roti: number; rice: number; dal: number; sabzi: number }> =

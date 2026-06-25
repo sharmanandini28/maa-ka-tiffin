@@ -30,6 +30,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminZonesRouteImport } from './routes/_authenticated/admin/zones'
 import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authenticated/admin/payments'
+import { Route as AuthenticatedAdminPaymentSettingsRouteImport } from './routes/_authenticated/admin/payment-settings'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminMenuRouteImport } from './routes/_authenticated/admin/menu'
 
@@ -138,6 +139,12 @@ const AuthenticatedAdminPaymentsRoute =
     path: '/payments',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminPaymentSettingsRoute =
+  AuthenticatedAdminPaymentSettingsRouteImport.update({
+    id: '/payment-settings',
+    path: '/payment-settings',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
     id: '/orders',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/admin/menu': typeof AuthenticatedAdminMenuRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/payment-settings': typeof AuthenticatedAdminPaymentSettingsRoute
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/zones': typeof AuthenticatedAdminZonesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/menu': typeof AuthenticatedAdminMenuRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/payment-settings': typeof AuthenticatedAdminPaymentSettingsRoute
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/admin/zones': typeof AuthenticatedAdminZonesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -219,6 +228,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/admin/menu': typeof AuthenticatedAdminMenuRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/payment-settings': typeof AuthenticatedAdminPaymentSettingsRoute
   '/_authenticated/admin/payments': typeof AuthenticatedAdminPaymentsRoute
   '/_authenticated/admin/zones': typeof AuthenticatedAdminZonesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/menu'
     | '/admin/orders'
+    | '/admin/payment-settings'
     | '/admin/payments'
     | '/admin/zones'
     | '/admin/'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/menu'
     | '/admin/orders'
+    | '/admin/payment-settings'
     | '/admin/payments'
     | '/admin/zones'
     | '/admin'
@@ -293,6 +305,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/admin/menu'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/payment-settings'
     | '/_authenticated/admin/payments'
     | '/_authenticated/admin/zones'
     | '/_authenticated/admin/'
@@ -467,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPaymentsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/payment-settings': {
+      id: '/_authenticated/admin/payment-settings'
+      path: '/payment-settings'
+      fullPath: '/admin/payment-settings'
+      preLoaderRoute: typeof AuthenticatedAdminPaymentSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
       path: '/orders'
@@ -487,6 +507,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminMenuRoute: typeof AuthenticatedAdminMenuRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminPaymentSettingsRoute: typeof AuthenticatedAdminPaymentSettingsRoute
   AuthenticatedAdminPaymentsRoute: typeof AuthenticatedAdminPaymentsRoute
   AuthenticatedAdminZonesRoute: typeof AuthenticatedAdminZonesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -496,6 +517,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminMenuRoute: AuthenticatedAdminMenuRoute,
     AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+    AuthenticatedAdminPaymentSettingsRoute:
+      AuthenticatedAdminPaymentSettingsRoute,
     AuthenticatedAdminPaymentsRoute: AuthenticatedAdminPaymentsRoute,
     AuthenticatedAdminZonesRoute: AuthenticatedAdminZonesRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

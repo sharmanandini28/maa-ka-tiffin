@@ -5,9 +5,10 @@ This project must be verified against a staging Supabase project before any prod
 ## Why Staging Is Required
 
 - The application now depends on the audit-log migration at `supabase/migrations/20260625091500_admin_action_logs.sql`.
+- Admin-managed UPI settings depend on `supabase/migrations/20260625103000_payment_settings.sql`.
 - Admin payment and order actions write to `public.admin_action_logs`.
 - The order drawer reads audit history from `public.admin_action_logs`.
-- The migration must be applied and smoke-tested on staging before production.
+- These migrations must be applied and smoke-tested on staging before production.
 - Production must not be touched until staging migration and smoke tests pass.
 
 ## Required Staging Supabase Details
@@ -111,6 +112,26 @@ Expected properties:
 - Does not drop existing tables.
 - Does not destructively change existing columns.
 
+## Payment Settings Migration Review
+
+Migration file:
+
+```text
+supabase/migrations/20260625103000_payment_settings.sql
+```
+
+Expected properties:
+
+- Creates `public.payment_settings`.
+- Seeds one active placeholder UPI settings row.
+- Allows public/anonymous read of active payment settings only.
+- Allows only admins to insert/update payment settings.
+- Grants full access to `service_role`.
+- Enables RLS.
+- Adds `payment_settings_updated` to audit-log action validation when the audit table exists.
+- Does not drop existing tables.
+- Does not destructively change existing columns.
+
 ## Staging Smoke Test Checklist
 
 ### Public Order Flow
@@ -123,11 +144,16 @@ Expected properties:
 - Today dinner cutoff is evaluated in `Asia/Kolkata`.
 - Late order path routes to manual approval behavior.
 - Lunch + Dinner linked order creates unique order codes.
+- UPI QR uses the active staging payment settings.
+- Updating UPI settings in admin changes the order page QR destination.
 
 ### Admin Flow
 
 - Admin login works through direct auth route.
+- Payment Settings page loads.
+- Admin can update UPI ID, payee name, instructions, UPI enabled, and transaction ID requirement.
 - Payments queue loads.
+- Payments queue shows the active UPI ID and payee.
 - UPI payment can be verified.
 - UPI payment can be rejected with note.
 - Payment can be marked as COD.

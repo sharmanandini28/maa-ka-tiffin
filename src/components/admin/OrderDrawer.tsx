@@ -24,6 +24,7 @@ import { PaymentBadge, DeliveryBadge } from "./StatusBadge";
 import { DELIVERY_FLOW, DELIVERY_NEXT } from "@/lib/status";
 import { formatINR, buildWhatsAppTo, ADD_ONS } from "@/lib/brand";
 import {
+  AUDIT_LOG_UNAVAILABLE_MESSAGE,
   adminAuditLogsByOrderQueryOptions,
   mapsSearchLink,
   type AdminActionLog,
@@ -270,9 +271,11 @@ export function OrderDrawer({
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading activity...
               </div>
-            ) : auditQuery.data && auditQuery.data.length > 0 ? (
+            ) : auditQuery.data?.unavailable ? (
+              <p className="text-xs text-muted-foreground">{AUDIT_LOG_UNAVAILABLE_MESSAGE}</p>
+            ) : auditQuery.data && auditQuery.data.logs.length > 0 ? (
               <div className="space-y-3">
-                {auditQuery.data.map((log) => (
+                {auditQuery.data.logs.map((log) => (
                   <AuditLogRow key={log.id} log={log} />
                 ))}
               </div>

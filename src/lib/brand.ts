@@ -1,8 +1,21 @@
 export const WHATSAPP_NUMBER = "919311234567"; // Maa Jaisa Tiffin support line
 export const SUPPORT_PHONE_DISPLAY = "+91 93112 34567";
 export const SUPPORT_EMAIL = "hello@maajaisatiffin.in";
-export const UPI_ID = "maajaisatiffin@upi";
 export const BRAND_NAME = "Maa Jaisa Tiffin";
+export const DEFAULT_PAYMENT_UPI_ID = "your-upi-id@bank";
+export const DEFAULT_PAYMENT_PAYEE_NAME = BRAND_NAME;
+export const PAYMENT_UPI_ID = import.meta.env.VITE_PAYMENT_UPI_ID?.trim() || DEFAULT_PAYMENT_UPI_ID;
+export const PAYMENT_PAYEE_NAME =
+  import.meta.env.VITE_PAYMENT_PAYEE_NAME?.trim() || DEFAULT_PAYMENT_PAYEE_NAME;
+export const PAYMENT_INSTRUCTION_TEXT =
+  "Razorpay/payment gateway use nahi ho raha hai. Aap direct UPI QR se payment karenge. Payment ke baad screenshot WhatsApp par bhejna zaroori hai. Admin payment verify karne ke baad order confirm karega.";
+export const PAYMENT_SCREENSHOT_INSTRUCTION =
+  "Payment complete karne ke baad screenshot WhatsApp par bhejein. Admin verify hone ke baad order confirm hoga.";
+export const PAYMENT_TRANSACTION_ID_REQUIRED = false;
+export const PAYMENT_UPI_ENABLED = true;
+
+// Backward-compatible alias for existing UI copy.
+export const UPI_ID = PAYMENT_UPI_ID;
 
 export const NOIDA_SECTORS = [
   "Sector 58",
@@ -37,6 +50,32 @@ export const ADD_ONS: { id: string; label: string; price: number }[] = [
 
 export function formatINR(amount: number): string {
   return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+export function formatPaymentAmount(amount: number): string {
+  return amount.toFixed(2);
+}
+
+export function buildUpiPaymentUri({
+  amount,
+  note,
+  upiId = PAYMENT_UPI_ID,
+  payeeName = PAYMENT_PAYEE_NAME,
+}: {
+  amount: number;
+  note?: string;
+  upiId?: string;
+  payeeName?: string;
+}): string {
+  const params = new URLSearchParams({
+    pa: upiId,
+    pn: payeeName,
+    am: formatPaymentAmount(amount),
+    cu: "INR",
+    tn: note?.trim() || `${BRAND_NAME} Order`,
+  });
+
+  return `upi://pay?${params.toString()}`;
 }
 
 export function buildWhatsAppLink(message: string): string {
