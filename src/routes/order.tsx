@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import QRCode from "qrcode";
 import {
   ShoppingBag,
   Check,
   MessageCircle,
+  Copy,
   AlertTriangle,
   Clock,
   Loader2,
@@ -46,10 +48,15 @@ import {
   ADD_ONS,
   DAILY_PRICES,
   EXTRA_ROTI_PRICE,
-  UPI_ID,
+  PAYMENT_INSTRUCTION_TEXT,
+  PAYMENT_PAYEE_NAME,
+  PAYMENT_SCREENSHOT_INSTRUCTION,
+  PAYMENT_TRANSACTION_ID_REQUIRED,
+  PAYMENT_UPI_ID,
   PLAN_CATALOG,
   SUBSCRIPTION_PLANS,
   type PlanSlug,
+  buildUpiPaymentUri,
   formatINR,
   buildWhatsAppLink,
 } from "@/lib/brand";
@@ -172,6 +179,17 @@ function OrderWizard({
   );
   const perMeal = DAILY_PRICES[plan] * quantity + addOnTotal + extraRoti * EXTRA_ROTI_PRICE;
   const grandTotal = (perMeal + deliveryFee) * meals.length;
+  const paymentNote = "Maa Jaisa Tiffin Order";
+  const upiPaymentUri = buildUpiPaymentUri({ amount: grandTotal, note: paymentNote });
+  const paymentWhatsAppMessage = buildPaymentWhatsAppMessage({
+    customerName: name.trim() || "Customer",
+    mobile: mobile.trim() || "Not provided",
+    meal: mealChoice === "both" ? "Lunch + Dinner" : mealChoice,
+    deliveryDate,
+    amount: grandTotal,
+    paymentMode,
+    upiTxnId: upiTxn.trim(),
+  });
 
   useEffect(() => {
     if (paymentMode === "cod" && !codAllowed) {
@@ -199,6 +217,13 @@ function OrderWizard({
         if (address.trim().length < 8) return "Please enter your full delivery address.";
         return null;
       case 6:
+        if (
+          paymentMode === "upi" &&
+          PAYMENT_TRANSACTION_ID_REQUIRED &&
+          upiTxn.trim().length === 0
+        ) {
+          return "Please enter the UPI transaction ID.";
+        }
         if (!terms) return "Please confirm you understand the booking cutoff policy.";
         return null;
       default:
@@ -640,7 +665,7 @@ function OrderWizard({
                     <span>
                       <span className="block font-semibold text-foreground">UPI / QR</span>
                       <span className="text-xs text-muted-foreground">
-                        Pay to <span className="font-medium text-foreground">{UPI_ID}</span>
+                        Pay to <span className="font-medium text-foreground">{PAYMENT_UPI_ID}</span>
                       </span>
                     </span>
                   </button>
@@ -665,28 +690,25 @@ function OrderWizard({
                 </div>
 
                 {paymentMode === "upi" && (
-                  <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4">
-                    <p className="text-sm text-foreground">
-                      Pay <span className="font-bold text-primary">{formatINR(grandTotal)}</span> to{" "}
-                      <span className="font-semibold">{UPI_ID}</span>, then enter your UPI reference
-                      below. You can also share the screenshot on WhatsApp after placing the order.
-                    </p>
-                    <div className="mt-3 grid max-w-sm gap-1.5">
-                      <Label htmlFor="txn">UPI transaction ID (optional now)</Label>
-                      <Input
-                        id="txn"
-                        value={upiTxn}
-                        onChange={(e) => setUpiTxn(e.target.value)}
-                        placeholder="e.g. 4071XXXXXX"
-                      />
-                    </div>
-                  </div>
+                  <UpiPaymentBox
+                    amount={grandTotal}
+                    paymentUri={upiPaymentUri}
+                    paymentNote={paymentNote}
+                    transactionId={upiTxn}
+                    onTransactionIdChange={setUpiTxn}
+                    whatsappLink={buildWhatsAppLink(paymentWhatsAppMessage)}
+                  />
                 )}
 
                 <div className="mt-4 flex items-start gap-2 rounded-lg bg-mustard/10 p-3 text-xs text-foreground">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  Payment status stays <span className="font-semibold">Pending</span> until our team
-                  verifies it. You'll get a WhatsApp confirmation either way.
+                  <span>
+                    <span className="font-semibold">
+                      UPI payment ke baad order automatic confirm nahi hota.
+                    </span>{" "}
+                    Screenshot/transaction ID verify hone ke baad admin order confirm karega. COD
+                    availability sector rules ke hisaab se rahegi.
+                  </span>
                 </div>
               </StepCard>
             )}
@@ -866,6 +888,139 @@ function PlaceOrderButton({
         </>
       )}
     </Button>
+  );
+}
+
+function UpiPaymentBox({
+  amount,
+  paymentUri,
+  paymentNote,
+  transactionId,
+  onTransactionIdChange,
+  whatsappLink,
+}: {
+  amount: number;
+  paymentUri: string;
+  paymentNote: string;
+  transactionId: string;
+  onTransactionIdChange: (value: string) => void;
+  whatsappLink: string;
+}) {
+  const [qrDataUrl, setQrDataUrl] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    QRCode.toDataURL(paymentUri, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 220,
+      color: {
+        dark: "#163529",
+        light: "#ffffff",
+      },
+    })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch((error) => {
+        console.warn("Could not generate UPI QR code", error);
+        if (!cancelled) setQrDataUrl("");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentUri]);
+
+  async function copy(value: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error(`Could not copy ${label.toLowerCase()}`);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-border bg-secondary/30 p-4">
+      <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+        <div className="flex min-h-[220px] items-center justify-center rounded-xl border border-border bg-white p-3">
+          {qrDataUrl ? (
+            <img src={qrDataUrl} alt="UPI QR code for this order amount" className="h-52 w-52" />
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Generating QR...
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Payable amount</p>
+            <p className="font-serif text-3xl font-bold text-primary">{formatINR(amount)}</p>
+          </div>
+
+          <dl className="grid gap-2 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
+              <dt className="text-muted-foreground">UPI ID</dt>
+              <dd className="flex items-center gap-2 font-semibold text-foreground">
+                {PAYMENT_UPI_ID}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copy(PAYMENT_UPI_ID, "UPI ID")}
+                >
+                  <Copy className="h-4 w-4" /> Copy
+                </Button>
+              </dd>
+            </div>
+            <div className="flex justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
+              <dt className="text-muted-foreground">Payee</dt>
+              <dd className="font-semibold text-foreground">{PAYMENT_PAYEE_NAME}</dd>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background/70 px-3 py-2">
+              <dt className="text-muted-foreground">Payment note</dt>
+              <dd className="flex items-center gap-2 font-semibold text-foreground">
+                {paymentNote}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copy(paymentNote, "Payment note")}
+                >
+                  <Copy className="h-4 w-4" /> Copy
+                </Button>
+              </dd>
+            </div>
+          </dl>
+
+          <p className="rounded-lg bg-mustard/15 p-3 text-xs text-foreground">
+            {PAYMENT_SCREENSHOT_INSTRUCTION}
+          </p>
+          <p className="text-xs text-muted-foreground">{PAYMENT_INSTRUCTION_TEXT}</p>
+
+          <div className="grid max-w-sm gap-1.5">
+            <Label htmlFor="txn">
+              UPI transaction ID {PAYMENT_TRANSACTION_ID_REQUIRED ? "(required)" : "(optional)"}
+            </Label>
+            <Input
+              id="txn"
+              value={transactionId}
+              onChange={(e) => onTransactionIdChange(e.target.value)}
+              placeholder="e.g. 4071XXXXXX"
+            />
+          </div>
+
+          <Button asChild variant="outline">
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="h-4 w-4" /> Send payment screenshot on WhatsApp
+            </a>
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1145,16 +1300,64 @@ const NEXT_STEPS = [
   { icon: PackageCheck, label: "Delivered" },
 ];
 
+function buildPaymentWhatsAppMessage({
+  orderCode,
+  customerName,
+  mobile,
+  meal,
+  deliveryDate,
+  amount,
+  paymentMode,
+  upiTxnId,
+}: {
+  orderCode?: string;
+  customerName: string;
+  mobile: string;
+  meal: string;
+  deliveryDate: string;
+  amount: number;
+  paymentMode: "upi" | "cod" | string;
+  upiTxnId?: string | null;
+}) {
+  return [
+    "Maine payment kar diya hai. Screenshot attach kar raha/rahi hoon. Please verify and approve my order.",
+    "",
+    `Order: ${orderCode || "Pre-submit order summary"}`,
+    `Name: ${customerName}`,
+    `Mobile: ${mobile}`,
+    `Meal: ${meal}`,
+    `Delivery date: ${deliveryDate}`,
+    `Amount: ${formatINR(amount)}`,
+    `Payment mode: ${paymentMode.toUpperCase()}`,
+    ...(upiTxnId ? [`UPI transaction ID: ${upiTxnId}`] : []),
+  ].join("\n");
+}
+
 function Confirmation({ results, onReset }: { results: OrderResultDTO[]; onReset: () => void }) {
   const primary = results[0];
   const total = results.reduce((s, r) => s + r.total, 0);
   const isLate = results.some((r) => r.is_late_request);
   const codes = results.map((r) => r.order_code).join(", ");
-
-  const message = `Hi Maa Jaisa Tiffin! Here's my order:
+  const mealSummary = results
+    .map((r) => `${r.meal} on ${r.delivery_date} — ${r.plan_name} × ${r.quantity}`)
+    .join("\n");
+  const message =
+    primary.payment_mode === "upi"
+      ? buildPaymentWhatsAppMessage({
+          orderCode: codes,
+          customerName: primary.customer_name,
+          mobile: primary.mobile,
+          meal: results.map((r) => r.meal).join(" + "),
+          deliveryDate: results.map((r) => r.delivery_date).join(", "),
+          amount: total,
+          paymentMode: primary.payment_mode,
+          upiTxnId: primary.upi_txn_id,
+        })
+      : `Hi Maa Jaisa Tiffin! Here's my order:
 Order: ${codes}
 Name: ${primary.customer_name}
-${results.map((r) => `${r.meal} on ${r.delivery_date} — ${r.plan_name} × ${r.quantity}`).join("\n")}
+Mobile: ${primary.mobile}
+${mealSummary}
 Amount: ${formatINR(total)}
 Payment: ${primary.payment_mode.toUpperCase()} (${primary.payment_status})
 ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Please confirm."} Thank you!`;
@@ -1197,10 +1400,14 @@ ${isLate ? "This is a LATE ORDER REQUEST — please confirm availability." : "Pl
             </div>
           </dl>
           {primary.payment_mode === "upi" && (
-            <p className="mt-3 rounded-md bg-mustard/15 p-2.5 text-xs text-foreground">
-              Pay {formatINR(total)} to UPI ID <span className="font-semibold">{UPI_ID}</span> and
-              share the screenshot on WhatsApp.
-            </p>
+            <div className="mt-3 space-y-2 rounded-md bg-mustard/15 p-2.5 text-xs text-foreground">
+              <p>
+                Pay {formatINR(total)} to UPI ID{" "}
+                <span className="font-semibold">{PAYMENT_UPI_ID}</span> and share the screenshot on
+                WhatsApp.
+              </p>
+              <p className="font-medium">{PAYMENT_INSTRUCTION_TEXT}</p>
+            </div>
           )}
         </div>
 

@@ -67,7 +67,7 @@ function PaymentsPage() {
       <div>
         <h1 className="font-serif text-3xl font-bold text-foreground">Payments & Requests</h1>
         <p className="text-sm text-muted-foreground">
-          Verify UPI payments and approve late orders.
+          Manually verify UPI screenshots/transaction IDs and approve late orders.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ function PaymentsPage() {
                       <p className="text-xs text-muted-foreground">{o.mobile}</p>
                     </div>
                     <div className="min-w-[140px] text-sm">
-                      <p className="text-muted-foreground">UPI Txn ID</p>
+                      <p className="text-muted-foreground">Customer UPI Txn ID</p>
                       <p className="font-medium text-foreground">
                         {o.upi_txn_id || (
                           <span className="text-muted-foreground">— not provided</span>
@@ -126,7 +126,7 @@ function PaymentsPage() {
                         onClick={() =>
                           patch(o, { payment_status: "paid" }, "Marked verified", {
                             actionType: "payment_verified",
-                            confirm: `Verify UPI payment for ${o.order_code}?`,
+                            confirm: `Verify UPI payment for ${o.order_code} after checking screenshot/transaction ID?`,
                           })
                         }
                       >
@@ -185,14 +185,15 @@ function PaymentsPage() {
                       <a
                         href={buildWhatsAppTo(
                           o.whatsapp_number || o.mobile,
-                          `Hi ${o.customer_name}, we couldn't verify your UPI payment for ${o.order_code}. Could you share the screenshot?`,
+                          `Hi ${o.customer_name}, we need to verify your UPI payment for ${o.order_code} (${formatINR(o.total)}). Please share the payment screenshot${o.upi_txn_id ? ` for txn ID ${o.upi_txn_id}` : " and UPI transaction ID"} so we can approve your order.`,
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-secondary"
-                        title="WhatsApp"
+                        className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-secondary"
+                        title="Customer WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4" />
+                        WhatsApp
                       </a>
                     </div>
                   </div>

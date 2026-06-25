@@ -1,8 +1,17 @@
 export const WHATSAPP_NUMBER = "919311234567"; // Maa Jaisa Tiffin support line
 export const SUPPORT_PHONE_DISPLAY = "+91 93112 34567";
 export const SUPPORT_EMAIL = "hello@maajaisatiffin.in";
-export const UPI_ID = "maajaisatiffin@upi";
 export const BRAND_NAME = "Maa Jaisa Tiffin";
+export const PAYMENT_UPI_ID = "your-upi-id@bank";
+export const PAYMENT_PAYEE_NAME = BRAND_NAME;
+export const PAYMENT_INSTRUCTION_TEXT =
+  "UPI payment ke baad order automatic confirm nahi hota. Screenshot/transaction ID verify hone ke baad admin order confirm karega.";
+export const PAYMENT_SCREENSHOT_INSTRUCTION =
+  "Payment complete karne ke baad screenshot WhatsApp par bhejein. Admin verify hone ke baad order confirm hoga.";
+export const PAYMENT_TRANSACTION_ID_REQUIRED = false;
+
+// Backward-compatible alias for existing UI copy.
+export const UPI_ID = PAYMENT_UPI_ID;
 
 export const NOIDA_SECTORS = [
   "Sector 58",
@@ -37,6 +46,22 @@ export const ADD_ONS: { id: string; label: string; price: number }[] = [
 
 export function formatINR(amount: number): string {
   return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+export function formatPaymentAmount(amount: number): string {
+  return amount.toFixed(2);
+}
+
+export function buildUpiPaymentUri({ amount, note }: { amount: number; note?: string }): string {
+  const params = new URLSearchParams({
+    pa: PAYMENT_UPI_ID,
+    pn: PAYMENT_PAYEE_NAME,
+    am: formatPaymentAmount(amount),
+    cu: "INR",
+    tn: note?.trim() || `${BRAND_NAME} Order`,
+  });
+
+  return `upi://pay?${params.toString()}`;
 }
 
 export function buildWhatsAppLink(message: string): string {

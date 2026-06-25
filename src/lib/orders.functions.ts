@@ -39,6 +39,7 @@ export type OrderInput = z.infer<typeof orderSchema>;
 export interface OrderResultDTO {
   order_code: string;
   customer_name: string;
+  mobile: string;
   meal: string;
   delivery_date: string;
   plan_name: string;
@@ -47,6 +48,7 @@ export interface OrderResultDTO {
   delivery_fee: number;
   payment_mode: string;
   payment_status: string;
+  upi_txn_id: string | null;
   is_late_request: boolean;
 }
 
@@ -173,7 +175,7 @@ export const createOrder = createServerFn({ method: "POST" })
         total,
       })
       .select(
-        "order_code, customer_name, meal, delivery_date, plan_name, quantity, total, payment_mode, payment_status, is_late_request",
+        "order_code, customer_name, mobile, meal, delivery_date, plan_name, quantity, total, payment_mode, payment_status, upi_txn_id, is_late_request",
       )
       .single();
 

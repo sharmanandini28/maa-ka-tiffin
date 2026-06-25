@@ -65,10 +65,31 @@ export type AdminActionType =
   | "menu_updated";
 
 export type AdminActionLog = Tables<"admin_action_logs">;
+export type AdminAuditLogQueryResult = {
+  logs: AdminActionLog[];
+  unavailable: boolean;
+};
 export type OrderAdminPatch = Pick<
   TablesUpdate<"orders">,
   "payment_status" | "payment_mode" | "delivery_state" | "admin_notes" | "is_late_request"
 >;
+
+export const AUDIT_LOG_UNAVAILABLE_MESSAGE =
+  "Audit history is unavailable. Apply the audit-log migration to enable this section.";
+
+export function isAuditLogUnavailableError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const maybe = error as { code?: string; message?: string; details?: string };
+  const text = `${maybe.message ?? ""} ${maybe.details ?? ""}`.toLowerCase();
+  return (
+    maybe.code === "42P01" ||
+    maybe.code === "PGRST205" ||
+    (text.includes("admin_action_logs") &&
+      (text.includes("does not exist") ||
+        text.includes("could not find") ||
+        text.includes("schema cache")))
+  );
+}
 
 export const adminAuditLogsByOrderQueryOptions = (orderId: string) =>
   queryOptions({
@@ -81,8 +102,17 @@ export const adminAuditLogsByOrderQueryOptions = (orderId: string) =>
         )
         .eq("order_id", orderId)
         .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as AdminActionLog[];
+      if (error) {
+        if (isAuditLogUnavailableError(error)) {
+          console.warn(AUDIT_LOG_UNAVAILABLE_MESSAGE, error.message);
+          return { logs: [], unavailable: true } satisfies AdminAuditLogQueryResult;
+        }
+        throw error;
+      }
+      return {
+        logs: (data ?? []) as AdminActionLog[],
+        unavailable: false,
+      } satisfies AdminAuditLogQueryResult;
     },
     staleTime: 15_000,
   });
@@ -167,7 +197,13 @@ export async function logAdminAction(input: Omit<AdminActionLogInsert, "admin_us
     ...input,
   });
 
-  if (error) throw error;
+  if (error) {
+    if (isAuditLogUnavailableError(error)) {
+      console.warn(AUDIT_LOG_UNAVAILABLE_MESSAGE, error.message);
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function updateOrderWithAudit(
