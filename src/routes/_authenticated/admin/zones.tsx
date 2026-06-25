@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, MapPin, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { adminZonesQueryOptions, type AdminZone } from "@/lib/admin-data";
+import { adminZonesQueryOptions, logAdminAction, type AdminZone } from "@/lib/admin-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +37,7 @@ function ZonesPage() {
     const { error } = await supabase.from("delivery_zones").insert({
       sector,
       sort_order: zones.length + 1,
-    } as never);
+    });
     setAdding(false);
     if (error) {
       toast.error("Could not add: " + error.message);
@@ -108,21 +108,42 @@ function ZoneCard({ zone, onChanged }: { zone: AdminZone; onChanged: () => void 
 
   async function save() {
     setSaving(true);
-    const { error } = await supabase
-      .from("delivery_zones")
-      .update({
-        active: draft.active,
-        delivery_fee: draft.delivery_fee,
-        min_qty: draft.min_qty,
-        meals: draft.meals,
-        subscription_only: draft.subscription_only,
-        cod_allowed: draft.cod_allowed,
-      } as never)
-      .eq("id", zone.id);
+    const oldValue = {
+      active: zone.active,
+      delivery_fee: zone.delivery_fee,
+      min_qty: zone.min_qty,
+      meals: zone.meals,
+      subscription_only: zone.subscription_only,
+      cod_allowed: zone.cod_allowed,
+    };
+    const newValue = {
+      active: draft.active,
+      delivery_fee: draft.delivery_fee,
+      min_qty: draft.min_qty,
+      meals: draft.meals,
+      subscription_only: draft.subscription_only,
+      cod_allowed: draft.cod_allowed,
+    };
+    const { error } = await supabase.from("delivery_zones").update(newValue).eq("id", zone.id);
     setSaving(false);
     if (error) {
       toast.error("Save failed: " + error.message);
       return;
+    }
+    try {
+      await logAdminAction({
+        action_type: "zone_updated",
+        entity_type: "delivery_zone",
+        entity_id: zone.id,
+        old_value: oldValue,
+        new_value: newValue,
+        note: zone.sector,
+      });
+    } catch (auditError) {
+      toast.warning(
+        "Zone updated, but audit log failed: " +
+          (auditError instanceof Error ? auditError.message : String(auditError)),
+      );
     }
     toast.success(`${zone.sector} updated`);
     onChanged();

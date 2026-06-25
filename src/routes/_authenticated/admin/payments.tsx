@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Wallet, Clock, Check, X, MessageCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { adminOrdersQueryOptions, type AdminOrder } from "@/lib/admin-data";
+import {
+  adminOrdersQueryOptions,
+  updateOrderWithAudit,
+  type AdminOrder,
+  type AdminActionType,
+  type OrderAdminPatch,
+} from "@/lib/admin-data";
 import { formatINR, buildWhatsAppTo } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 import { PaymentBadge } from "@/components/admin/StatusBadge";
@@ -16,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/payments")({
 function PaymentsPage() {
   const qc = useQueryClient();
   const { data: orders = [], isLoading } = useQuery(adminOrdersQueryOptions);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const upiPending = useMemo(
     () => orders.filter((o) => o.payment_mode === "upi" && o.payment_status === "pending"),
@@ -26,17 +32,34 @@ function PaymentsPage() {
     [orders],
   );
 
-  async function patch(id: string, p: Record<string, unknown>, msg: string) {
-    const { error } = await supabase
-      .from("orders")
-      .update(p as never)
-      .eq("id", id);
-    if (error) {
-      toast.error("Update failed: " + error.message);
-      return;
+  async function patch(
+    order: AdminOrder,
+    p: OrderAdminPatch,
+    msg: string,
+    options: { actionType?: AdminActionType; note?: string | null; confirm?: string } = {},
+  ) {
+    if (options.confirm && !window.confirm(options.confirm)) return;
+
+    const actionKey = `${order.id}:${options.actionType ?? Object.keys(p).join(",")}`;
+    setPendingAction(actionKey);
+    try {
+      const { auditError } = await updateOrderWithAudit(order, p, {
+        actionType: options.actionType,
+        note: options.note,
+      });
+      toast.success(msg);
+      if (auditError) toast.warning("Updated, but audit log failed: " + auditError.message);
+      await qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      await qc.invalidateQueries({ queryKey: ["admin-action-logs"] });
+    } catch (error) {
+      toast.error("Update failed: " + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setPendingAction(null);
     }
-    toast.success(msg);
-    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+  }
+
+  function isPending(order: AdminOrder, actionType: AdminActionType) {
+    return pendingAction === `${order.id}:${actionType}`;
   }
 
   return (
@@ -99,28 +122,64 @@ function PaymentsPage() {
                       <Button
                         size="sm"
                         variant="default"
-                        onClick={() => patch(o.id, { payment_status: "paid" }, "Marked verified")}
+                        disabled={pendingAction !== null}
+                        onClick={() =>
+                          patch(o, { payment_status: "paid" }, "Marked verified", {
+                            actionType: "payment_verified",
+                            confirm: `Verify UPI payment for ${o.order_code}?`,
+                          })
+                        }
                       >
-                        <Check className="h-4 w-4" /> Verify
+                        {isPending(o, "payment_verified") ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
+                        Verify
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => patch(o.id, { payment_status: "failed" }, "Marked failed")}
+                        disabled={pendingAction !== null}
+                        onClick={() => {
+                          if (!window.confirm(`Reject UPI payment for ${o.order_code}?`)) return;
+                          const note =
+                            window.prompt(
+                              `Optional admin note for rejecting ${o.order_code}:`,
+                              "",
+                            ) ?? null;
+                          void patch(o, { payment_status: "failed" }, "Marked failed", {
+                            actionType: "payment_rejected",
+                            note,
+                          });
+                        }}
                       >
-                        <X className="h-4 w-4" /> Reject
+                        {isPending(o, "payment_rejected") ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                        Reject
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
+                        disabled={pendingAction !== null}
                         onClick={() =>
                           patch(
-                            o.id,
+                            o,
                             { payment_mode: "cod", payment_status: "cod" },
                             "Switched to COD",
+                            {
+                              actionType: "payment_marked_cod",
+                              confirm: `Switch ${o.order_code} to COD?`,
+                            },
                           )
                         }
                       >
+                        {isPending(o, "payment_marked_cod") ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : null}
                         COD
                       </Button>
                       <a
@@ -157,7 +216,7 @@ function PaymentsPage() {
             ) : (
               <div className="divide-y divide-border">
                 {lateRequests.map((o) => (
-                  <LateRow key={o.id} o={o} onPatch={patch} />
+                  <LateRow key={o.id} o={o} onPatch={patch} pendingAction={pendingAction} />
                 ))}
               </div>
             )}
@@ -171,10 +230,20 @@ function PaymentsPage() {
 function LateRow({
   o,
   onPatch,
+  pendingAction,
 }: {
   o: AdminOrder;
-  onPatch: (id: string, p: Record<string, unknown>, msg: string) => void;
+  onPatch: (
+    order: AdminOrder,
+    p: OrderAdminPatch,
+    msg: string,
+    options?: { actionType?: AdminActionType; note?: string | null; confirm?: string },
+  ) => Promise<void>;
+  pendingAction: string | null;
 }) {
+  const approving = pendingAction === `${o.id}:late_order_approved`;
+  const rejecting = pendingAction === `${o.id}:late_order_rejected`;
+
   return (
     <div className="flex flex-wrap items-center gap-3 px-5 py-4">
       <div className="min-w-[160px]">
@@ -200,23 +269,39 @@ function LateRow({
         <Button
           size="sm"
           variant="default"
+          disabled={pendingAction !== null}
           onClick={() =>
             onPatch(
-              o.id,
+              o,
               { is_late_request: false, delivery_state: "confirmed" },
               "Late order approved",
+              {
+                actionType: "late_order_approved",
+                confirm: `Approve late request ${o.order_code}?`,
+              },
             )
           }
         >
-          <Check className="h-4 w-4" /> Approve
+          {approving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          Approve
         </Button>
         <Button
           size="sm"
           variant="outline"
           className="text-destructive"
-          onClick={() => onPatch(o.id, { delivery_state: "cancelled" }, "Late order rejected")}
+          disabled={pendingAction !== null}
+          onClick={() => {
+            if (!window.confirm(`Reject late request ${o.order_code}?`)) return;
+            const note =
+              window.prompt(`Optional admin note for rejecting ${o.order_code}:`, "") ?? null;
+            void onPatch(o, { delivery_state: "cancelled" }, "Late order rejected", {
+              actionType: "late_order_rejected",
+              note,
+            });
+          }}
         >
-          <X className="h-4 w-4" /> Reject
+          {rejecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+          Reject
         </Button>
         <a
           href={buildWhatsAppTo(

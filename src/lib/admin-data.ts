@@ -1,5 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { DeliveryStatus, PaymentStatus } from "./status";
 
 // Full order shape read by the admin operations console (RLS: admin-only).
 export type AdminOrder = {
@@ -22,11 +24,10 @@ export type AdminOrder = {
   landmark: string | null;
   sector: string;
   maps_link: string | null;
-  payment_mode: string;
-  payment_status: string;
-  payment_proof: string | null;
+  payment_mode: "upi" | "cod";
+  payment_status: PaymentStatus;
   upi_txn_id: string | null;
-  delivery_state: string;
+  delivery_state: DeliveryStatus;
   special_note: string | null;
   admin_notes: string | null;
   is_late_request: boolean;
@@ -49,6 +50,150 @@ export const adminOrdersQueryOptions = queryOptions({
   },
   staleTime: 15_000,
 });
+
+export type AdminActionType =
+  | "payment_verified"
+  | "payment_rejected"
+  | "payment_marked_cod"
+  | "delivery_status_changed"
+  | "payment_status_changed"
+  | "order_cancelled"
+  | "late_order_approved"
+  | "late_order_rejected"
+  | "order_note_updated"
+  | "zone_updated"
+  | "menu_updated";
+
+export type AdminActionLog = Tables<"admin_action_logs">;
+export type OrderAdminPatch = Pick<
+  TablesUpdate<"orders">,
+  "payment_status" | "payment_mode" | "delivery_state" | "admin_notes" | "is_late_request"
+>;
+
+export const adminAuditLogsByOrderQueryOptions = (orderId: string) =>
+  queryOptions({
+    queryKey: ["admin-action-logs", "order", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_action_logs")
+        .select(
+          "id, admin_user_id, action_type, entity_type, entity_id, order_id, old_value, new_value, note, created_at",
+        )
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AdminActionLog[];
+    },
+    staleTime: 15_000,
+  });
+
+type AdminActionLogInsert = TablesInsert<"admin_action_logs">;
+
+const ORDER_AUDIT_FIELDS = [
+  "payment_status",
+  "payment_mode",
+  "delivery_state",
+  "admin_notes",
+  "is_late_request",
+] as const;
+
+function toJson(value: unknown): Json {
+  if (value === undefined) return null;
+  return value as Json;
+}
+
+function getOrderAuditValues(order: AdminOrder, patch: OrderAdminPatch) {
+  const oldValue: Record<string, Json> = {};
+  const newValue: Record<string, Json> = {};
+
+  ORDER_AUDIT_FIELDS.forEach((field) => {
+    if (field in patch) {
+      const next = patch[field];
+      if (next !== order[field]) {
+        oldValue[field] = toJson(order[field]);
+        newValue[field] = toJson(next);
+      }
+    }
+  });
+
+  return {
+    oldValue: Object.keys(oldValue).length > 0 ? oldValue : null,
+    newValue: Object.keys(newValue).length > 0 ? newValue : null,
+  };
+}
+
+function inferOrderActionType(order: AdminOrder, patch: OrderAdminPatch): AdminActionType {
+  if (
+    order.is_late_request &&
+    patch.is_late_request === false &&
+    patch.delivery_state === "confirmed"
+  ) {
+    return "late_order_approved";
+  }
+  if (order.is_late_request && patch.delivery_state === "cancelled") {
+    return "late_order_rejected";
+  }
+  if (patch.delivery_state === "cancelled" && order.delivery_state !== "cancelled") {
+    return "order_cancelled";
+  }
+  if (patch.payment_mode === "cod" || patch.payment_status === "cod") {
+    return "payment_marked_cod";
+  }
+  if (patch.payment_status === "paid" && order.payment_status !== "paid") {
+    return "payment_verified";
+  }
+  if (patch.payment_status === "failed" && order.payment_status !== "failed") {
+    return "payment_rejected";
+  }
+  if (patch.payment_status !== undefined && patch.payment_status !== order.payment_status) {
+    return "payment_status_changed";
+  }
+  if (patch.delivery_state !== undefined && patch.delivery_state !== order.delivery_state) {
+    return "delivery_status_changed";
+  }
+  if ("admin_notes" in patch && patch.admin_notes !== order.admin_notes) {
+    return "order_note_updated";
+  }
+  return "payment_status_changed";
+}
+
+export async function logAdminAction(input: Omit<AdminActionLogInsert, "admin_user_id">) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from("admin_action_logs").insert({
+    admin_user_id: user?.id ?? null,
+    ...input,
+  });
+
+  if (error) throw error;
+}
+
+export async function updateOrderWithAudit(
+  order: AdminOrder,
+  patch: OrderAdminPatch,
+  options: { actionType?: AdminActionType; note?: string | null } = {},
+) {
+  const { error } = await supabase.from("orders").update(patch).eq("id", order.id);
+  if (error) throw error;
+
+  const { oldValue, newValue } = getOrderAuditValues(order, patch);
+  try {
+    await logAdminAction({
+      action_type: options.actionType ?? inferOrderActionType(order, patch),
+      entity_type: "order",
+      entity_id: order.id,
+      order_id: order.id,
+      old_value: oldValue,
+      new_value: newValue,
+      note: options.note?.trim() || null,
+    });
+    return { auditError: null };
+  } catch (auditError) {
+    return { auditError: auditError instanceof Error ? auditError : new Error(String(auditError)) };
+  }
+}
 
 export type AdminZone = {
   id: string;

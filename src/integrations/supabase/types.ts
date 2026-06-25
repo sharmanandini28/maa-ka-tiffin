@@ -8,6 +8,53 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_action_logs: {
+        Row: {
+          action_type: string;
+          admin_user_id: string | null;
+          created_at: string;
+          entity_id: string | null;
+          entity_type: string;
+          id: string;
+          new_value: Json | null;
+          note: string | null;
+          old_value: Json | null;
+          order_id: string | null;
+        };
+        Insert: {
+          action_type: string;
+          admin_user_id?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          entity_type: string;
+          id?: string;
+          new_value?: Json | null;
+          note?: string | null;
+          old_value?: Json | null;
+          order_id?: string | null;
+        };
+        Update: {
+          action_type?: string;
+          admin_user_id?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          entity_type?: string;
+          id?: string;
+          new_value?: Json | null;
+          note?: string | null;
+          old_value?: Json | null;
+          order_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_action_logs_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       delivery_zones: {
         Row: {
           active: boolean;
