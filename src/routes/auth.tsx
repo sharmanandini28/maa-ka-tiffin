@@ -59,6 +59,22 @@ function AuthPage() {
     }
   }
 
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4">
+        <Logo className="mb-8" />
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-7 text-center shadow-lg">
+          <ServerOff className="mx-auto h-8 w-8 text-muted-foreground" />
+          <h1 className="mt-3 font-serif text-2xl font-bold text-foreground">Admin Access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{CONFIG_MESSAGES.admin}</p>
+        </div>
+        <Link to="/" className="mt-6 text-sm text-muted-foreground hover:text-primary">
+          ← Back to website
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4">
       <Logo className="mb-8" />
