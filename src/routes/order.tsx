@@ -107,7 +107,7 @@ function OrderPage() {
           </h1>
           <p className="mt-2 text-muted-foreground">{CONFIG_MESSAGES.ordering}</p>
           <a
-            href={whatsappLink("Namaste! Main tiffin order karna chahta/chahti hoon.")}
+            href={buildWhatsAppLink("Namaste! Main tiffin order karna chahta/chahti hoon.")}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground"
