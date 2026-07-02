@@ -59,6 +59,7 @@ import {
   formatINR,
   buildWhatsAppLink,
 } from "@/lib/brand";
+import { isSupabaseConfigured, CONFIG_MESSAGES } from "@/lib/config";
 
 const searchSchema = z.object({
   plan: z.enum(["basic", "standard", "premium"]).optional(),
