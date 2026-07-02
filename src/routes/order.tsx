@@ -59,6 +59,7 @@ import {
   formatINR,
   buildWhatsAppLink,
 } from "@/lib/brand";
+import { isSupabaseConfigured, CONFIG_MESSAGES } from "@/lib/config";
 
 const searchSchema = z.object({
   plan: z.enum(["basic", "standard", "premium"]).optional(),
@@ -96,6 +97,28 @@ function OrderPage() {
   const createOrderFn = useServerFn(createOrder);
   const [results, setResults] = useState<OrderResultDTO[] | null>(null);
 
+  if (!isSupabaseConfigured) {
+    return (
+      <SiteLayout>
+        <div className="mx-auto max-w-lg px-4 py-20 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-mustard" />
+          <h1 className="mt-4 font-serif text-2xl font-bold text-foreground">
+            Ordering temporarily unavailable
+          </h1>
+          <p className="mt-2 text-muted-foreground">{CONFIG_MESSAGES.ordering}</p>
+          <a
+            href={buildWhatsAppLink("Namaste! Main tiffin order karna chahta/chahti hoon.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground"
+          >
+            <MessageCircle className="h-4 w-4" /> Order on WhatsApp
+          </a>
+        </div>
+      </SiteLayout>
+    );
+  }
+
   if (results) {
     return (
       <SiteLayout>
@@ -103,6 +126,7 @@ function OrderPage() {
       </SiteLayout>
     );
   }
+
 
   return (
     <SiteLayout>

@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Lock, UtensilsCrossed } from "lucide-react";
+import { Loader2, Lock, UtensilsCrossed, ServerOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site/Logo";
+import { isSupabaseConfigured, CONFIG_MESSAGES } from "@/lib/config";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -24,6 +25,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/admin" });
     });
@@ -55,6 +57,22 @@ function AuthPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4">
+        <Logo className="mb-8" />
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-7 text-center shadow-lg">
+          <ServerOff className="mx-auto h-8 w-8 text-muted-foreground" />
+          <h1 className="mt-3 font-serif text-2xl font-bold text-foreground">Admin Access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{CONFIG_MESSAGES.admin}</p>
+        </div>
+        <Link to="/" className="mt-6 text-sm text-muted-foreground hover:text-primary">
+          ← Back to website
+        </Link>
+      </div>
+    );
   }
 
   return (
