@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Lock, UtensilsCrossed } from "lucide-react";
+import { Loader2, Lock, UtensilsCrossed, ServerOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site/Logo";
+import { isSupabaseConfigured, CONFIG_MESSAGES } from "@/lib/config";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
